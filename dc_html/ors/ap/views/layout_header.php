@@ -17,36 +17,71 @@
             </div>
 
             <ul class="nav-menu">
-                <li class="nav-item <?php echo ($action ?? '') === 'dashboard' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=dashboard">仪表板</a>
+                <!-- 日常操作区块 -->
+                <li class="nav-category">
+                    <span class="nav-category-title">日常操作</span>
                 </li>
-                <li class="nav-section">任务管理</li>
+                <li class="nav-item <?php echo ($action ?? '') === 'dashboard' ? 'active' : ''; ?>">
+                    <a href="/ors/ap/?action=dashboard">
+                        <span class="nav-icon">📊</span>
+                        仪表板
+                    </a>
+                </li>
                 <li class="nav-item <?php echo ($action ?? '') === 'tasks' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=tasks">任务列表</a>
+                    <a href="/ors/ap/?action=tasks">
+                        <span class="nav-icon">✓</span>
+                        任务列表
+                    </a>
                 </li>
                 <li class="nav-item <?php echo ($action ?? '') === 'kanban' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=kanban">看板视图</a>
+                    <a href="/ors/ap/?action=kanban">
+                        <span class="nav-icon">▦</span>
+                        看板视图
+                    </a>
                 </li>
-                <li class="nav-section">采购管理</li>
                 <li class="nav-item <?php echo ($action ?? '') === 'purchases' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=purchases">采购列表</a>
+                    <a href="/ors/ap/?action=purchases">
+                        <span class="nav-icon">🛒</span>
+                        采购列表
+                    </a>
+                </li>
+
+                <!-- 分隔线 -->
+                <li class="nav-divider"></li>
+
+                <!-- 数据管理区块 -->
+                <li class="nav-category">
+                    <span class="nav-category-title">数据管理</span>
+                </li>
+                <li class="nav-item <?php echo ($action ?? '') === 'projects' ? 'active' : ''; ?>">
+                    <a href="/ors/ap/?action=projects">
+                        <span class="nav-icon">📁</span>
+                        项目列表
+                    </a>
                 </li>
                 <li class="nav-item <?php echo ($action ?? '') === 'items' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=items">物品库</a>
+                    <a href="/ors/ap/?action=items">
+                        <span class="nav-icon">📦</span>
+                        物品库
+                    </a>
                 </li>
                 <li class="nav-item <?php echo ($action ?? '') === 'vendors' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=vendors">供应商</a>
+                    <a href="/ors/ap/?action=vendors">
+                        <span class="nav-icon">🏪</span>
+                        供应商
+                    </a>
                 </li>
-                <li class="nav-section">模板中心</li>
                 <li class="nav-item <?php echo ($action ?? '') === 'templates' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=templates">模板库</a>
+                    <a href="/ors/ap/?action=templates">
+                        <span class="nav-icon">📝</span>
+                        模板库
+                    </a>
                 </li>
                 <li class="nav-item <?php echo ($action ?? '') === 'lessons' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=lessons">踩坑记录</a>
-                </li>
-                <li class="nav-section">项目管理</li>
-                <li class="nav-item <?php echo ($action ?? '') === 'projects' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=projects">项目列表</a>
+                    <a href="/ors/ap/?action=lessons">
+                        <span class="nav-icon">⚠</span>
+                        踩坑记录
+                    </a>
                 </li>
             </ul>
         </nav>

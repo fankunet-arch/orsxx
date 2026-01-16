@@ -28,6 +28,89 @@
     </table>
 </div>
 
+<!-- 编辑任务弹窗 -->
+<div id="editModal" class="modal" style="display:none;">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3>编辑任务</h3>
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editTaskId">
+            <div class="form-group">
+                <label>标题 <span class="text-danger">*</span></label>
+                <input type="text" id="editTitle" placeholder="任务标题">
+            </div>
+            <div class="form-group">
+                <label>描述</label>
+                <textarea id="editDescription" rows="3" placeholder="任务描述（可选）"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>所属项目</label>
+                    <select id="editProject">
+                        <option value="">-- 无 --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>阶段</label>
+                    <select id="editPhase">
+                        <option value="">-- 选择阶段 --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>状态</label>
+                    <select id="editStatus">
+                        <option value="todo">待办</option>
+                        <option value="doing">进行中</option>
+                        <option value="blocked">阻塞</option>
+                        <option value="done">已完成</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>优先级</label>
+                    <select id="editPriority">
+                        <option value="low">低</option>
+                        <option value="medium">中</option>
+                        <option value="high">高</option>
+                        <option value="urgent">紧急</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="editTemplate">
+                        标记为模板
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>模板标签（逗号分隔）</label>
+                    <input type="text" id="editTags" placeholder="例如：must_buy, it">
+                </div>
+            </div>
+            <div class="form-group" id="blockReasonGroup" style="display:none;">
+                <label>阻塞原因</label>
+                <select id="editBlockReason">
+                    <option value="">-- 选择原因 --</option>
+                    <option value="waiting_info">等待信息</option>
+                    <option value="waiting_resource">等待资源</option>
+                    <option value="waiting_approval">等待审批</option>
+                    <option value="dependency">依赖阻塞</option>
+                    <option value="other">其他</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" onclick="deleteTask()" style="margin-right:auto;">删除</button>
+            <button class="btn btn-outline" onclick="closeEditModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveTask()">保存</button>
+        </div>
+    </div>
+</div>
+
 <!-- 批量更新弹窗 -->
 <div id="bulkModal" class="modal" style="display:none;">
     <div class="modal-content">
@@ -213,9 +296,168 @@ async function executeBulkUpdate() {
     }
 }
 
-function editTask(id) {
-    showToast('编辑功能 - 待实现', 'info');
+async function editTask(id) {
+    try {
+        const response = await fetch('/ors/api/tasks.php?action=get&id=' + id);
+        const result = await response.json();
+
+        if (result.success && result.data.task) {
+            const task = result.data.task;
+
+            // 填充编辑表单
+            document.getElementById('editTaskId').value = task.id;
+            document.getElementById('editTitle').value = task.title || '';
+            document.getElementById('editDescription').value = task.description || '';
+            document.getElementById('editProject').value = task.project_id || '';
+            document.getElementById('editPhase').value = task.phase_code || '';
+            document.getElementById('editStatus').value = task.status || 'todo';
+            document.getElementById('editPriority').value = task.priority || 'medium';
+            document.getElementById('editTemplate').checked = task.template_flag == 1;
+            document.getElementById('editTags').value = task.template_tags || '';
+            document.getElementById('editBlockReason').value = task.block_reason || '';
+
+            // 显示/隐藏阻塞原因
+            toggleBlockReason();
+
+            // 填充项目下拉框
+            await populateEditProjects();
+            document.getElementById('editProject').value = task.project_id || '';
+
+            // 填充阶段下拉框
+            populateEditPhases();
+            document.getElementById('editPhase').value = task.phase_code || '';
+
+            document.getElementById('editModal').style.display = 'flex';
+        } else {
+            showToast('加载任务失败', 'error');
+        }
+    } catch (error) {
+        console.error('加载任务失败:', error);
+        showToast('网络错误', 'error');
+    }
 }
+
+async function populateEditProjects() {
+    const select = document.getElementById('editProject');
+    select.innerHTML = '<option value="">-- 无 --</option>';
+
+    try {
+        const response = await fetch('/ors/api/projects.php?action=list');
+        const result = await response.json();
+        if (result.success) {
+            result.data.projects.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = p.project_name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('加载项目失败:', error);
+    }
+}
+
+function populateEditPhases() {
+    const select = document.getElementById('editPhase');
+    select.innerHTML = '<option value="">-- 选择阶段 --</option>';
+    phases.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.phase_code;
+        option.textContent = p.phase_name;
+        select.appendChild(option);
+    });
+}
+
+function toggleBlockReason() {
+    const status = document.getElementById('editStatus').value;
+    const group = document.getElementById('blockReasonGroup');
+    group.style.display = status === 'blocked' ? 'block' : 'none';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+async function saveTask() {
+    const id = document.getElementById('editTaskId').value;
+    const title = document.getElementById('editTitle').value.trim();
+
+    if (!title) {
+        showToast('请输入任务标题', 'warning');
+        return;
+    }
+
+    const data = {
+        id: parseInt(id),
+        title: title,
+        description: document.getElementById('editDescription').value.trim(),
+        project_id: document.getElementById('editProject').value || null,
+        phase_code: document.getElementById('editPhase').value || null,
+        status: document.getElementById('editStatus').value,
+        priority: document.getElementById('editPriority').value,
+        template_flag: document.getElementById('editTemplate').checked,
+        template_tags: document.getElementById('editTags').value.trim(),
+        block_reason: document.getElementById('editStatus').value === 'blocked'
+            ? document.getElementById('editBlockReason').value
+            : null
+    };
+
+    try {
+        const response = await fetch('/ors/api/tasks.php?action=update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast('任务已更新', 'success');
+            closeEditModal();
+            loadTasks();
+        } else {
+            showToast(result.message || '保存失败', 'error');
+        }
+    } catch (error) {
+        console.error('保存失败:', error);
+        showToast('网络错误', 'error');
+    }
+}
+
+async function deleteTask() {
+    const id = document.getElementById('editTaskId').value;
+
+    if (!confirm('确定要删除这个任务吗？此操作不可撤销。')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/ors/api/tasks.php?action=delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: parseInt(id) })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast('任务已删除', 'success');
+            closeEditModal();
+            loadTasks();
+        } else {
+            showToast(result.message || '删除失败', 'error');
+        }
+    } catch (error) {
+        console.error('删除失败:', error);
+        showToast('网络错误', 'error');
+    }
+}
+
+// 监听状态变化显示/隐藏阻塞原因
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('editStatus');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', toggleBlockReason);
+    }
+});
 
 function formatDate(dateStr) {
     if (!dateStr) return '-';

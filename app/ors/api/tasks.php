@@ -24,6 +24,10 @@ switch ($action) {
         handleList();
         break;
 
+    case 'get':
+        handleGet();
+        break;
+
     case 'today':
         handleToday();
         break;
@@ -74,6 +78,27 @@ function handleList(): void
     $projectId = $_GET['project_id'] ?? null;
     $tasks = Task::getByProject($projectId ? (int)$projectId : null);
     Response::success(['tasks' => $tasks]);
+}
+
+function handleGet(): void
+{
+    $id = (int)($_GET['id'] ?? 0);
+
+    if (!$id) {
+        Response::error('任务ID不能为空');
+    }
+
+    $task = Task::find($id);
+
+    if (!$task) {
+        Response::notFound('任务不存在');
+    }
+
+    // 获取关联的模板标签
+    $tagRecords = TemplateTag::getForEntity('task', $task['id']);
+    $task['template_tags'] = implode(', ', array_column($tagRecords, 'tag_name'));
+
+    Response::success(['task' => $task]);
 }
 
 function handleToday(): void

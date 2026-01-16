@@ -69,29 +69,81 @@ body {
 
 .nav-menu {
     list-style: none;
-    padding: 16px 0;
+    padding: 12px 0;
 }
 
+/* 分类标题 - 不可点击，视觉上明显区分 */
+.nav-category {
+    padding: 20px 16px 8px 16px;
+    pointer-events: none;
+    user-select: none;
+}
+
+.nav-category-title {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #6b7280;
+    background: linear-gradient(90deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+    padding: 6px 8px;
+    border-radius: 4px;
+    border-left: 3px solid var(--primary-color);
+}
+
+/* 分隔线 */
+.nav-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 16px 16px;
+}
+
+/* 可点击的导航项 */
+.nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    margin: 2px 8px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    transition: all 0.2s;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.nav-item a:hover {
+    color: var(--sidebar-active);
+    background: rgba(255,255,255,0.08);
+    transform: translateX(2px);
+}
+
+.nav-item.active a {
+    color: var(--sidebar-active);
+    background: var(--primary-color);
+    font-weight: 500;
+}
+
+/* 导航图标 */
+.nav-icon {
+    width: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+.nav-item.active .nav-icon {
+    opacity: 1;
+}
+
+/* 旧的 nav-section 保持兼容（如果其他地方用到） */
 .nav-section {
     padding: 16px 20px 8px;
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     color: var(--sidebar-text);
-}
-
-.nav-item a {
-    display: block;
-    padding: 10px 20px;
-    color: var(--sidebar-text);
-    text-decoration: none;
-    transition: all 0.2s;
-}
-
-.nav-item a:hover,
-.nav-item.active a {
-    color: var(--sidebar-active);
-    background: rgba(255,255,255,0.1);
 }
 
 /* Main Wrapper */
