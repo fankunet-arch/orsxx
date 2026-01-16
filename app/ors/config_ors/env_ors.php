@@ -8,11 +8,11 @@
  */
 
 // Database Configuration
-define('ORS_DB_HOST', 'localhost');
+define('ORS_DB_HOST', 'mhdlmskp2kpxguj.mysql.db');
 define('ORS_DB_PORT', '3306');
-define('ORS_DB_NAME', 'ors_db');
-define('ORS_DB_USER', 'ors_user');
-define('ORS_DB_PASS', 'your_password_here');
+define('ORS_DB_NAME', 'mhdlmskp2kpxguj');
+define('ORS_DB_USER', 'mhdlmskp2kpxguj');
+define('ORS_DB_PASS', 'BWNrmksqMEqgbX37r3QNDJLGRrUka');
 define('ORS_DB_CHARSET', 'utf8mb4');
 
 // Application Configuration
