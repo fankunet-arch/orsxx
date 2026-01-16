@@ -1,7 +1,7 @@
 <div class="page-header">
-    <h2>Lessons Learned</h2>
+    <h2>踩坑记录</h2>
     <div class="page-actions">
-        <button class="btn btn-primary" onclick="showAddLessonModal()">+ Add Lesson</button>
+        <button class="btn btn-primary" onclick="showAddLessonModal()">+ 新增记录</button>
     </div>
 </div>
 
@@ -9,94 +9,94 @@
     <table class="data-table" id="lessonsTable">
         <thead>
             <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Severity</th>
-                <th>Check Timing</th>
-                <th>Prevention Check Item</th>
-                <th>Template</th>
-                <th>Actions</th>
+                <th>标题</th>
+                <th>分类</th>
+                <th>严重程度</th>
+                <th>检查时间点</th>
+                <th>预防检查项</th>
+                <th>模板</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody id="lessonsBody">
-            <tr><td colspan="7" class="loading">Loading...</td></tr>
+            <tr><td colspan="7" class="loading">加载中...</td></tr>
         </tbody>
     </table>
 </div>
 
-<!-- Add/Edit Lesson Modal -->
+<!-- 新增/编辑踩坑记录弹窗 -->
 <div id="lessonModal" class="modal" style="display:none;">
     <div class="modal-content modal-lg">
         <div class="modal-header">
-            <h3 id="lessonModalTitle">Add Lesson</h3>
+            <h3 id="lessonModalTitle">新增踩坑记录</h3>
             <button class="modal-close" onclick="closeLessonModal()">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="lessonId">
             <div class="form-group">
-                <label>Title *</label>
+                <label>标题 *</label>
                 <input type="text" id="lessonTitle" required>
             </div>
             <div class="form-group">
-                <label>Description</label>
+                <label>描述</label>
                 <textarea id="lessonDescription" rows="2"></textarea>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Category</label>
+                    <label>分类</label>
                     <select id="lessonCategory">
-                        <option value="">-- Select --</option>
+                        <option value="">-- 请选择 --</option>
                         <option value="it">IT</option>
-                        <option value="power">Power</option>
-                        <option value="fire_safety">Fire Safety</option>
-                        <option value="permit">Permits</option>
-                        <option value="procurement">Procurement</option>
-                        <option value="other">Other</option>
+                        <option value="power">电力</option>
+                        <option value="fire_safety">消防</option>
+                        <option value="permit">证照</option>
+                        <option value="procurement">采购</option>
+                        <option value="other">其他</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Severity</label>
+                    <label>严重程度</label>
                     <select id="lessonSeverity">
-                        <option value="low">Low</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="high">High</option>
-                        <option value="critical">Critical</option>
+                        <option value="low">低</option>
+                        <option value="medium" selected>中</option>
+                        <option value="high">高</option>
+                        <option value="critical">严重</option>
                     </select>
                 </div>
             </div>
             <div class="form-group">
-                <label>Root Cause</label>
+                <label>根本原因</label>
                 <textarea id="lessonRootCause" rows="2"></textarea>
             </div>
             <div class="form-group">
-                <label>Prevention Check Item * (Required for templates)</label>
+                <label>预防检查项 *（模板必填）</label>
                 <textarea id="lessonPreventionCheckItem" rows="3" required
-                    placeholder="What should be checked to prevent this issue?"></textarea>
+                    placeholder="应该检查什么来预防此问题？"></textarea>
             </div>
             <div class="form-group">
-                <label>Check Timing Description</label>
-                <input type="text" id="lessonCheckTiming" placeholder="e.g. 'After signing contract'">
+                <label>检查时间点描述</label>
+                <input type="text" id="lessonCheckTiming" placeholder="例如：'签约后'">
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Check Days Before Open</label>
+                    <label>开业前提前天数</label>
                     <input type="number" id="lessonDaysBeforeOpen" min="0">
                 </div>
                 <div class="form-group">
-                    <label>Check Days After Signing</label>
+                    <label>签约后天数</label>
                     <input type="number" id="lessonDaysAfterSign" min="0">
                 </div>
             </div>
             <div class="form-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="lessonTemplate" checked>
-                    <span>Add to Template Library</span>
+                    <span>添加到模板库</span>
                 </label>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeLessonModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="saveLesson()">Save</button>
+            <button class="btn btn-outline" onclick="closeLessonModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveLesson()">保存</button>
         </div>
     </div>
 </div>
@@ -104,11 +104,18 @@
 <script>
 const lessonCategories = {
     'it': 'IT',
-    'power': 'Power',
-    'fire_safety': 'Fire Safety',
-    'permit': 'Permits',
-    'procurement': 'Procurement',
-    'other': 'Other'
+    'power': '电力',
+    'fire_safety': '消防',
+    'permit': '证照',
+    'procurement': '采购',
+    'other': '其他'
+};
+
+const severityNames = {
+    'low': '低',
+    'medium': '中',
+    'high': '高',
+    'critical': '严重'
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -127,25 +134,25 @@ async function loadLessons() {
                 <tr>
                     <td>${escapeHtml(l.title)}</td>
                     <td>${lessonCategories[l.category] || '-'}</td>
-                    <td><span class="badge badge-${l.severity === 'critical' ? 'danger' : l.severity === 'high' ? 'warning' : 'info'}">${l.severity}</span></td>
+                    <td><span class="badge badge-${l.severity === 'critical' ? 'danger' : l.severity === 'high' ? 'warning' : 'info'}">${severityNames[l.severity] || l.severity}</span></td>
                     <td>${escapeHtml(l.check_timing || '-')}</td>
                     <td class="text-truncate" style="max-width: 300px;">${escapeHtml(l.prevention_check_item || '-')}</td>
-                    <td>${l.template_flag ? '<span class="badge badge-success">Yes</span>' : '-'}</td>
+                    <td>${l.template_flag ? '<span class="badge badge-success">是</span>' : '-'}</td>
                     <td>
-                        <button class="btn btn-xs" onclick="editLesson(${l.id})">Edit</button>
+                        <button class="btn btn-xs" onclick="editLesson(${l.id})">编辑</button>
                     </td>
                 </tr>
             `).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No lessons found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无踩坑记录</td></tr>';
         }
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="7" class="error-state">Failed to load lessons</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="error-state">加载失败</td></tr>';
     }
 }
 
 function showAddLessonModal() {
-    document.getElementById('lessonModalTitle').textContent = 'Add Lesson';
+    document.getElementById('lessonModalTitle').textContent = '新增踩坑记录';
     document.getElementById('lessonId').value = '';
     document.getElementById('lessonTitle').value = '';
     document.getElementById('lessonDescription').value = '';
@@ -169,7 +176,7 @@ async function saveLesson() {
     const preventionCheckItem = document.getElementById('lessonPreventionCheckItem').value;
 
     if (!preventionCheckItem) {
-        showToast('Prevention check item is required', 'error');
+        showToast('预防检查项不能为空', 'error');
         return;
     }
 
@@ -187,7 +194,7 @@ async function saveLesson() {
     };
 
     if (!data.title) {
-        showToast('Title is required', 'error');
+        showToast('标题不能为空', 'error');
         return;
     }
 
@@ -203,18 +210,18 @@ async function saveLesson() {
 
         const result = await response.json();
         if (result.success) {
-            showToast('Lesson saved!', 'success');
+            showToast('踩坑记录已保存！', 'success');
             closeLessonModal();
             loadLessons();
         } else {
-            showToast(result.message || 'Failed to save', 'error');
+            showToast(result.message || '保存失败', 'error');
         }
     } catch (error) {
-        showToast('Network error', 'error');
+        showToast('网络错误', 'error');
     }
 }
 
 function editLesson(id) {
-    showToast('Edit feature - load lesson and show modal', 'info');
+    showToast('编辑功能 - 待实现', 'info');
 }
 </script>

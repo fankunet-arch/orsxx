@@ -1,11 +1,11 @@
 <div class="page-header">
-    <h2>Template Library</h2>
+    <h2>模板库</h2>
 </div>
 
 <div class="tab-bar-inline">
-    <button class="tab-btn active" data-tab="tasksTab" onclick="switchTab('tasksTab')">Task Templates</button>
-    <button class="tab-btn" data-tab="itemsTab" onclick="switchTab('itemsTab')">Item Templates</button>
-    <button class="tab-btn" data-tab="lessonsTab" onclick="switchTab('lessonsTab')">Lesson Templates</button>
+    <button class="tab-btn active" data-tab="tasksTab" onclick="switchTab('tasksTab')">任务模板</button>
+    <button class="tab-btn" data-tab="itemsTab" onclick="switchTab('itemsTab')">物品模板</button>
+    <button class="tab-btn" data-tab="lessonsTab" onclick="switchTab('lessonsTab')">踩坑记录模板</button>
 </div>
 
 <div id="tasksTab" class="tab-content active">
@@ -13,15 +13,15 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Title</th>
-                    <th>Phase</th>
-                    <th>Blocking</th>
-                    <th>Lead Time</th>
-                    <th>Tags</th>
+                    <th>标题</th>
+                    <th>阶段</th>
+                    <th>关键路径</th>
+                    <th>提前期</th>
+                    <th>标签</th>
                 </tr>
             </thead>
             <tbody id="taskTemplatesBody">
-                <tr><td colspan="5" class="loading">Loading...</td></tr>
+                <tr><td colspan="5" class="loading">加载中...</td></tr>
             </tbody>
         </table>
     </div>
@@ -32,16 +32,16 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Must Buy</th>
-                    <th>Long Lead</th>
-                    <th>Lead Time</th>
-                    <th>Tags</th>
+                    <th>名称</th>
+                    <th>分类</th>
+                    <th>必买等级</th>
+                    <th>长周期</th>
+                    <th>采购周期</th>
+                    <th>标签</th>
                 </tr>
             </thead>
             <tbody id="itemTemplatesBody">
-                <tr><td colspan="6" class="loading">Loading...</td></tr>
+                <tr><td colspan="6" class="loading">加载中...</td></tr>
             </tbody>
         </table>
     </div>
@@ -52,15 +52,15 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Severity</th>
-                    <th>Check Timing</th>
-                    <th>Prevention Check Item</th>
+                    <th>标题</th>
+                    <th>分类</th>
+                    <th>严重程度</th>
+                    <th>检查时间点</th>
+                    <th>预防检查项</th>
                 </tr>
             </thead>
             <tbody id="lessonTemplatesBody">
-                <tr><td colspan="5" class="loading">Loading...</td></tr>
+                <tr><td colspan="5" class="loading">加载中...</td></tr>
             </tbody>
         </table>
     </div>
@@ -68,20 +68,33 @@
 
 <script>
 const categories = {
-    'it_devices': 'IT Devices',
-    'furniture': 'Furniture',
-    'equipment': 'Equipment',
-    'consumables': 'Consumables',
-    'other': 'Other'
+    'it_devices': 'IT设备',
+    'furniture': '家具',
+    'equipment': '设备',
+    'consumables': '耗材',
+    'other': '其他'
+};
+
+const mustBuyLevels = {
+    'must': '必买',
+    'recommended': '推荐',
+    'optional': '可选'
 };
 
 const lessonCategories = {
     'it': 'IT',
-    'power': 'Power',
-    'fire_safety': 'Fire Safety',
-    'permit': 'Permits',
-    'procurement': 'Procurement',
-    'other': 'Other'
+    'power': '电力',
+    'fire_safety': '消防',
+    'permit': '证照',
+    'procurement': '采购',
+    'other': '其他'
+};
+
+const severityNames = {
+    'low': '低',
+    'medium': '中',
+    'high': '高',
+    'critical': '严重'
 };
 
 let phases = [];
@@ -108,7 +121,7 @@ async function loadPhases() {
             phases = result.data.phases;
         }
     } catch (error) {
-        console.error('Failed to load phases:', error);
+        console.error('加载阶段失败:', error);
     }
 }
 
@@ -124,17 +137,17 @@ async function loadTaskTemplates() {
                 <tr>
                     <td>${escapeHtml(t.title)}</td>
                     <td>${phase ? escapeHtml(phase.phase_name) : '-'}</td>
-                    <td>${t.blocking_flag ? '<span class="badge badge-danger">Yes</span>' : '-'}</td>
-                    <td>${t.lead_time_days || '-'} days</td>
+                    <td>${t.blocking_flag ? '<span class="badge badge-danger">是</span>' : '-'}</td>
+                    <td>${t.lead_time_days ? t.lead_time_days + ' 天' : '-'}</td>
                     <td>${t.tags && t.tags.length > 0 ? t.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join(' ') : '-'}</td>
                 </tr>
                 `;
             }).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No task templates</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">暂无任务模板</td></tr>';
         }
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="5" class="error-state">Failed to load</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="error-state">加载失败</td></tr>';
     }
 }
 
@@ -148,17 +161,17 @@ async function loadItemTemplates() {
                 <tr>
                     <td>${escapeHtml(i.item_name)}</td>
                     <td>${categories[i.category] || '-'}</td>
-                    <td>${i.must_buy_level || '-'}</td>
-                    <td>${i.long_lead_flag ? 'Yes' : '-'}</td>
-                    <td>${i.lead_time_days || '-'} days</td>
+                    <td>${mustBuyLevels[i.must_buy_level] || '-'}</td>
+                    <td>${i.long_lead_flag ? '是' : '-'}</td>
+                    <td>${i.lead_time_days ? i.lead_time_days + ' 天' : '-'}</td>
                     <td>${i.tags && i.tags.length > 0 ? i.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join(' ') : '-'}</td>
                 </tr>
             `).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No item templates</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无物品模板</td></tr>';
         }
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="6" class="error-state">Failed to load</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="error-state">加载失败</td></tr>';
     }
 }
 
@@ -172,16 +185,16 @@ async function loadLessonTemplates() {
                 <tr>
                     <td>${escapeHtml(l.title)}</td>
                     <td>${lessonCategories[l.category] || '-'}</td>
-                    <td><span class="badge badge-${l.severity === 'critical' ? 'danger' : l.severity === 'high' ? 'warning' : 'info'}">${l.severity}</span></td>
+                    <td><span class="badge badge-${l.severity === 'critical' ? 'danger' : l.severity === 'high' ? 'warning' : 'info'}">${severityNames[l.severity] || l.severity}</span></td>
                     <td>${escapeHtml(l.check_timing || '-')}</td>
                     <td>${escapeHtml(l.prevention_check_item || '-')}</td>
                 </tr>
             `).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No lesson templates</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">暂无踩坑记录模板</td></tr>';
         }
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="5" class="error-state">Failed to load</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="error-state">加载失败</td></tr>';
     }
 }
 </script>

@@ -1,15 +1,15 @@
 <div class="page-header">
-    <h2>Purchases</h2>
+    <h2>采购列表</h2>
     <div class="page-actions">
         <select id="projectFilter" onchange="loadPurchases()">
-            <option value="">All Projects</option>
+            <option value="">全部项目</option>
         </select>
     </div>
 </div>
 
 <div class="summary-bar">
     <div class="summary-item">
-        <span class="summary-label">Total EUR:</span>
+        <span class="summary-label">EUR 总计:</span>
         <span class="summary-value" id="totalEur">0.00</span>
     </div>
 </div>
@@ -18,73 +18,81 @@
     <table class="data-table" id="purchasesTable">
         <thead>
             <tr>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Currency</th>
-                <th>FX Rate</th>
-                <th>Total EUR</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>物品</th>
+                <th>数量</th>
+                <th>单价</th>
+                <th>币种</th>
+                <th>汇率</th>
+                <th>折合EUR</th>
+                <th>状态</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody id="purchasesBody">
-            <tr><td colspan="8" class="loading">Loading...</td></tr>
+            <tr><td colspan="8" class="loading">加载中...</td></tr>
         </tbody>
     </table>
 </div>
 
-<!-- Normalize Modal -->
+<!-- 归一化弹窗 -->
 <div id="normalizeModal" class="modal" style="display:none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Normalize to Item Library</h3>
+            <h3>沉淀到物品库</h3>
             <button class="modal-close" onclick="closeNormalizeModal()">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="normalizePurchaseId">
             <div class="form-group">
-                <label>Item Name *</label>
+                <label>物品名称 *</label>
                 <input type="text" id="normalizeItemName" required>
             </div>
             <div class="form-group">
-                <label>Category</label>
+                <label>分类</label>
                 <select id="normalizeCategory">
-                    <option value="">-- Select --</option>
-                    <option value="it_devices">IT Devices</option>
-                    <option value="furniture">Furniture</option>
-                    <option value="equipment">Equipment</option>
-                    <option value="consumables">Consumables</option>
-                    <option value="other">Other</option>
+                    <option value="">-- 请选择 --</option>
+                    <option value="it_devices">IT设备</option>
+                    <option value="furniture">家具</option>
+                    <option value="equipment">设备</option>
+                    <option value="consumables">耗材</option>
+                    <option value="other">其他</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Unit</label>
+                <label>单位</label>
                 <input type="text" id="normalizeUnit" value="pcs">
             </div>
             <div class="form-group">
-                <label>Must Buy Level</label>
+                <label>必买等级</label>
                 <select id="normalizeMustBuy">
-                    <option value="must">Must</option>
-                    <option value="recommended" selected>Recommended</option>
-                    <option value="optional">Optional</option>
+                    <option value="must">必买</option>
+                    <option value="recommended" selected>推荐</option>
+                    <option value="optional">可选</option>
                 </select>
             </div>
             <div class="form-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="normalizeTemplate" checked>
-                    <span>Add to Template Library</span>
+                    <span>加入模板库</span>
                 </label>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeNormalizeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="executeNormalize()">Create Item</button>
+            <button class="btn btn-outline" onclick="closeNormalizeModal()">取消</button>
+            <button class="btn btn-primary" onclick="executeNormalize()">创建物品</button>
         </div>
     </div>
 </div>
 
 <script>
+const statusNames = {
+    'planned': '计划中',
+    'ordered': '已下单',
+    'shipped': '已发货',
+    'received': '已收货',
+    'cancelled': '已取消'
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     loadProjects();
     loadPurchases();
@@ -104,7 +112,7 @@ async function loadProjects() {
             });
         }
     } catch (error) {
-        console.error('Failed to load projects:', error);
+        console.error('加载项目失败:', error);
     }
 }
 
@@ -122,33 +130,33 @@ async function loadPurchases() {
             let totalEur = 0;
             tbody.innerHTML = result.data.purchases.map(p => {
                 totalEur += parseFloat(p.total_price_eur) || 0;
-                const itemName = p.linked_item_name || p.free_text_item || 'Unknown';
+                const itemName = p.linked_item_name || p.free_text_item || '未命名';
                 const isNormalized = !!p.item_id;
                 return `
                 <tr>
                     <td>
                         ${escapeHtml(itemName)}
-                        ${!isNormalized ? `<button class="btn btn-xs btn-outline ml-2" onclick="showNormalizeModal(${p.id}, '${escapeHtml(p.free_text_item || '')}')">Normalize</button>` : ''}
+                        ${!isNormalized ? `<button class="btn btn-xs btn-outline ml-2" onclick="showNormalizeModal(${p.id}, '${escapeHtml(p.free_text_item || '')}')">归一化</button>` : ''}
                     </td>
                     <td>${p.quantity}</td>
                     <td>${formatNumber(p.unit_price)}</td>
                     <td><span class="currency-badge">${p.currency}</span></td>
                     <td>${p.fx_rate_to_eur || '-'}</td>
                     <td><strong>${formatNumber(p.total_price_eur)}</strong></td>
-                    <td><span class="status-badge status-${p.status}">${p.status}</span></td>
+                    <td><span class="status-badge status-${p.status}">${statusNames[p.status] || p.status}</span></td>
                     <td>
-                        <button class="btn btn-xs" onclick="editPurchase(${p.id})">Edit</button>
+                        <button class="btn btn-xs" onclick="editPurchase(${p.id})">编辑</button>
                     </td>
                 </tr>
                 `;
             }).join('');
             document.getElementById('totalEur').textContent = formatNumber(totalEur) + ' EUR';
         } else {
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No purchases found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">暂无采购记录</td></tr>';
             document.getElementById('totalEur').textContent = '0.00 EUR';
         }
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="8" class="error-state">Failed to load purchases</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="error-state">加载失败</td></tr>';
     }
 }
 
@@ -171,7 +179,7 @@ async function executeNormalize() {
     const templateFlag = document.getElementById('normalizeTemplate').checked;
 
     if (!itemName) {
-        showToast('Item name is required', 'error');
+        showToast('物品名称不能为空', 'error');
         return;
     }
 
@@ -191,22 +199,22 @@ async function executeNormalize() {
 
         const result = await response.json();
         if (result.success) {
-            showToast('Item created and linked!', 'success');
+            showToast('物品已创建并关联！', 'success');
             closeNormalizeModal();
             loadPurchases();
         } else {
-            showToast(result.message || 'Failed to normalize', 'error');
+            showToast(result.message || '操作失败', 'error');
         }
     } catch (error) {
-        showToast('Network error', 'error');
+        showToast('网络错误', 'error');
     }
 }
 
 function editPurchase(id) {
-    showToast('Edit feature - implement as needed', 'info');
+    showToast('编辑功能 - 待实现', 'info');
 }
 
 function formatNumber(num) {
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num || 0);
+    return new Intl.NumberFormat('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num || 0);
 }
 </script>

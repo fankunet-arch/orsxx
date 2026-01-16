@@ -6,14 +6,14 @@ $user = ors_current_user();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ORS - Quick Task</title>
+    <title>ORS - 快速任务</title>
     <link rel="stylesheet" href="/ors/css/mobile.css">
 </head>
 <body>
     <header class="app-header">
         <div class="header-content">
             <a href="/ors/" class="back-btn">&larr;</a>
-            <h1>Quick Task</h1>
+            <h1>快速任务</h1>
         </div>
     </header>
 
@@ -22,28 +22,28 @@ $user = ors_current_user();
             <?php echo ors_csrf_field(); ?>
 
             <div class="form-group">
-                <label for="title">Task Title *</label>
+                <label for="title">任务标题 *</label>
                 <input type="text" id="title" name="title" required
-                       placeholder="e.g. Buy M6 bolts"
+                       placeholder="例如：买M6膨胀螺丝"
                        autofocus autocomplete="off">
             </div>
 
             <div class="form-group">
-                <label for="description">Notes (optional)</label>
+                <label for="description">备注（可选）</label>
                 <textarea id="description" name="description" rows="3"
-                          placeholder="Additional details..."></textarea>
+                          placeholder="补充说明..."></textarea>
             </div>
 
             <div class="form-group">
-                <label for="project_id">Project (optional)</label>
+                <label for="project_id">所属项目（可选）</label>
                 <select id="project_id" name="project_id">
-                    <option value="">-- No Project --</option>
+                    <option value="">-- 不选择项目 --</option>
                 </select>
             </div>
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary btn-block btn-large">
-                    Save Task
+                    保存任务
                 </button>
             </div>
         </form>
@@ -53,7 +53,7 @@ $user = ors_current_user();
 
     <script src="/ors/js/mobile.js"></script>
     <script>
-        // Load projects
+        // 加载项目列表
         loadProjects();
 
         async function loadProjects() {
@@ -70,7 +70,7 @@ $user = ors_current_user();
                     });
                 }
             } catch (error) {
-                console.error('Failed to load projects:', error);
+                console.error('加载项目失败:', error);
             }
         }
 
@@ -79,7 +79,7 @@ $user = ors_current_user();
 
             const submitBtn = this.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Saving...';
+            submitBtn.textContent = '保存中...';
 
             const formData = new FormData(this);
             const data = {
@@ -98,19 +98,19 @@ $user = ors_current_user();
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast('Task saved!', 'success');
-                    // Clear form for next entry
+                    showToast('任务已保存！', 'success');
+                    // 清空表单以便继续录入
                     document.getElementById('title').value = '';
                     document.getElementById('description').value = '';
                     document.getElementById('title').focus();
                 } else {
-                    showToast(result.message || 'Save failed', 'error');
+                    showToast(result.message || '保存失败', 'error');
                 }
             } catch (error) {
-                showToast('Network error', 'error');
+                showToast('网络错误', 'error');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Save Task';
+                submitBtn.textContent = '保存任务';
             }
         });
     </script>

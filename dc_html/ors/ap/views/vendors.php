@@ -1,7 +1,7 @@
 <div class="page-header">
-    <h2>Vendor Directory</h2>
+    <h2>供应商黄页</h2>
     <div class="page-actions">
-        <button class="btn btn-primary" onclick="showAddVendorModal()">+ Add Vendor</button>
+        <button class="btn btn-primary" onclick="showAddVendorModal()">+ 新增供应商</button>
     </div>
 </div>
 
@@ -9,98 +9,98 @@
     <table class="data-table" id="vendorsTable">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Contact</th>
-                <th>Phone</th>
-                <th>Rating</th>
-                <th>Actions</th>
+                <th>名称</th>
+                <th>分类</th>
+                <th>联系人</th>
+                <th>电话</th>
+                <th>评分</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody id="vendorsBody">
-            <tr><td colspan="6" class="loading">Loading...</td></tr>
+            <tr><td colspan="6" class="loading">加载中...</td></tr>
         </tbody>
     </table>
 </div>
 
-<!-- Add/Edit Vendor Modal -->
+<!-- 新增/编辑供应商弹窗 -->
 <div id="vendorModal" class="modal" style="display:none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="vendorModalTitle">Add Vendor</h3>
+            <h3 id="vendorModalTitle">新增供应商</h3>
             <button class="modal-close" onclick="closeVendorModal()">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="vendorId">
             <div class="form-group">
-                <label>Vendor Name *</label>
+                <label>供应商名称 *</label>
                 <input type="text" id="vendorName" required>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Category</label>
+                    <label>分类</label>
                     <select id="vendorCategory">
-                        <option value="">-- Select --</option>
-                        <option value="it">IT/Electronics</option>
-                        <option value="furniture">Furniture</option>
-                        <option value="decoration">Decoration</option>
-                        <option value="food">Food Supply</option>
-                        <option value="service">Service</option>
-                        <option value="other">Other</option>
+                        <option value="">-- 请选择 --</option>
+                        <option value="it">IT/电子</option>
+                        <option value="furniture">家具</option>
+                        <option value="decoration">装修</option>
+                        <option value="food">食材</option>
+                        <option value="service">服务</option>
+                        <option value="other">其他</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Contact Person</label>
+                    <label>联系人</label>
                     <input type="text" id="vendorContact">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Phone</label>
+                    <label>电话</label>
                     <input type="tel" id="vendorPhone">
                 </div>
                 <div class="form-group">
-                    <label>Email</label>
+                    <label>邮箱</label>
                     <input type="email" id="vendorEmail">
                 </div>
             </div>
             <div class="form-group">
-                <label>Address</label>
+                <label>地址</label>
                 <textarea id="vendorAddress" rows="2"></textarea>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Rating (1-5)</label>
+                    <label>评分（1-5分）</label>
                     <select id="vendorRating">
-                        <option value="">-- Select --</option>
-                        <option value="5">5 - Excellent</option>
-                        <option value="4">4 - Good</option>
-                        <option value="3">3 - Average</option>
-                        <option value="2">2 - Poor</option>
-                        <option value="1">1 - Very Poor</option>
+                        <option value="">-- 请选择 --</option>
+                        <option value="5">5 - 非常好</option>
+                        <option value="4">4 - 好</option>
+                        <option value="3">3 - 一般</option>
+                        <option value="2">2 - 差</option>
+                        <option value="1">1 - 非常差</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Rating Comment</label>
-                    <input type="text" id="vendorRatingComment" placeholder="One-line comment">
+                    <label>评价备注</label>
+                    <input type="text" id="vendorRatingComment" placeholder="一句话评价">
                 </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeVendorModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="saveVendor()">Save</button>
+            <button class="btn btn-outline" onclick="closeVendorModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveVendor()">保存</button>
         </div>
     </div>
 </div>
 
 <script>
 const vendorCategories = {
-    'it': 'IT/Electronics',
-    'furniture': 'Furniture',
-    'decoration': 'Decoration',
-    'food': 'Food Supply',
-    'service': 'Service',
-    'other': 'Other'
+    'it': 'IT/电子',
+    'furniture': '家具',
+    'decoration': '装修',
+    'food': '食材',
+    'service': '服务',
+    'other': '其他'
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -123,15 +123,15 @@ async function loadVendors() {
                     <td>${escapeHtml(v.phone || '-')}</td>
                     <td>${v.rating ? renderRating(v.rating) : '-'}</td>
                     <td>
-                        <button class="btn btn-xs" onclick="editVendor(${v.id})">Edit</button>
+                        <button class="btn btn-xs" onclick="editVendor(${v.id})">编辑</button>
                     </td>
                 </tr>
             `).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No vendors found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无供应商</td></tr>';
         }
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="6" class="error-state">Failed to load vendors</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="error-state">加载失败</td></tr>';
     }
 }
 
@@ -140,7 +140,7 @@ function renderRating(rating) {
 }
 
 function showAddVendorModal() {
-    document.getElementById('vendorModalTitle').textContent = 'Add Vendor';
+    document.getElementById('vendorModalTitle').textContent = '新增供应商';
     document.getElementById('vendorId').value = '';
     document.getElementById('vendorName').value = '';
     document.getElementById('vendorCategory').value = '';
@@ -171,7 +171,7 @@ async function saveVendor() {
     };
 
     if (!data.vendor_name) {
-        showToast('Vendor name is required', 'error');
+        showToast('供应商名称不能为空', 'error');
         return;
     }
 
@@ -187,18 +187,18 @@ async function saveVendor() {
 
         const result = await response.json();
         if (result.success) {
-            showToast('Vendor saved!', 'success');
+            showToast('供应商已保存！', 'success');
             closeVendorModal();
             loadVendors();
         } else {
-            showToast(result.message || 'Failed to save', 'error');
+            showToast(result.message || '保存失败', 'error');
         }
     } catch (error) {
-        showToast('Network error', 'error');
+        showToast('网络错误', 'error');
     }
 }
 
 function editVendor(id) {
-    showToast('Edit feature - load vendor and show modal', 'info');
+    showToast('编辑功能 - 待实现', 'info');
 }
 </script>
