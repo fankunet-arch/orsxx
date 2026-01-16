@@ -1,8 +1,8 @@
 <div class="page-header">
-    <h2>Task Kanban</h2>
+    <h2>任务看板</h2>
     <div class="page-actions">
         <select id="projectFilter" onchange="loadKanban()">
-            <option value="">All Projects</option>
+            <option value="">全部项目</option>
         </select>
     </div>
 </div>
@@ -10,7 +10,7 @@
 <div class="kanban-board">
     <div class="kanban-column" data-status="todo">
         <div class="column-header">
-            <h4>Todo</h4>
+            <h4>待办</h4>
             <span class="column-count" id="countTodo">0</span>
         </div>
         <div class="column-body" id="colTodo"></div>
@@ -18,7 +18,7 @@
 
     <div class="kanban-column" data-status="doing">
         <div class="column-header">
-            <h4>Doing</h4>
+            <h4>进行中</h4>
             <span class="column-count" id="countDoing">0</span>
         </div>
         <div class="column-body" id="colDoing"></div>
@@ -26,7 +26,7 @@
 
     <div class="kanban-column" data-status="blocked">
         <div class="column-header column-blocked">
-            <h4>Blocked</h4>
+            <h4>阻塞</h4>
             <span class="column-count" id="countBlocked">0</span>
         </div>
         <div class="column-body" id="colBlocked"></div>
@@ -34,54 +34,54 @@
 
     <div class="kanban-column" data-status="done">
         <div class="column-header column-done">
-            <h4>Done</h4>
+            <h4>已完成</h4>
             <span class="column-count" id="countDone">0</span>
         </div>
         <div class="column-body" id="colDone"></div>
     </div>
 </div>
 
-<!-- Block Reason Modal -->
+<!-- 阻塞原因弹窗 -->
 <div id="blockReasonModal" class="modal" style="display:none;">
     <div class="modal-content modal-sm">
         <div class="modal-header">
-            <h3>Select Block Reason</h3>
+            <h3>选择阻塞原因</h3>
             <button class="modal-close" onclick="closeBlockModal()">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="blockTaskId">
             <div class="form-group">
-                <label>Block Reason *</label>
+                <label>阻塞原因 *</label>
                 <select id="blockReason" required>
-                    <option value="">-- Select Reason --</option>
-                    <option value="waiting_vendor">Waiting for Vendor</option>
-                    <option value="waiting_approval">Waiting for Approval</option>
-                    <option value="waiting_material">Waiting for Material</option>
-                    <option value="waiting_budget">Waiting for Budget</option>
-                    <option value="technical_issue">Technical Issue</option>
-                    <option value="other">Other</option>
+                    <option value="">-- 请选择原因 --</option>
+                    <option value="waiting_vendor">等待供应商</option>
+                    <option value="waiting_approval">等待审批</option>
+                    <option value="waiting_material">等待物料</option>
+                    <option value="waiting_budget">等待预算</option>
+                    <option value="technical_issue">技术问题</option>
+                    <option value="other">其他</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Details (optional)</label>
+                <label>详细说明（可选）</label>
                 <textarea id="blockReasonDetail" rows="2"></textarea>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeBlockModal()">Cancel</button>
-            <button class="btn btn-danger" onclick="confirmBlock()">Confirm Block</button>
+            <button class="btn btn-outline" onclick="closeBlockModal()">取消</button>
+            <button class="btn btn-danger" onclick="confirmBlock()">确认阻塞</button>
         </div>
     </div>
 </div>
 
 <script>
 const blockReasons = {
-    'waiting_vendor': 'Waiting for Vendor',
-    'waiting_approval': 'Waiting for Approval',
-    'waiting_material': 'Waiting for Material',
-    'waiting_budget': 'Waiting for Budget',
-    'technical_issue': 'Technical Issue',
-    'other': 'Other'
+    'waiting_vendor': '等待供应商',
+    'waiting_approval': '等待审批',
+    'waiting_material': '等待物料',
+    'waiting_budget': '等待预算',
+    'technical_issue': '技术问题',
+    'other': '其他'
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -103,7 +103,7 @@ async function loadProjects() {
             });
         }
     } catch (error) {
-        console.error('Failed to load projects:', error);
+        console.error('加载项目失败:', error);
     }
 }
 
@@ -122,7 +122,7 @@ async function loadKanban() {
             renderColumn('colDone', 'countDone', kanban.done);
         }
     } catch (error) {
-        console.error('Failed to load kanban:', error);
+        console.error('加载看板失败:', error);
     }
 }
 
@@ -131,7 +131,7 @@ function renderColumn(colId, countId, tasks) {
     const container = document.getElementById(colId);
 
     if (tasks.length === 0) {
-        container.innerHTML = '<div class="empty-column">No tasks</div>';
+        container.innerHTML = '<div class="empty-column">暂无任务</div>';
         return;
     }
 
@@ -140,10 +140,10 @@ function renderColumn(colId, countId, tasks) {
             <div class="card-title">${escapeHtml(task.title)}</div>
             ${task.block_reason ? `<div class="card-block-reason">${blockReasons[task.block_reason] || task.block_reason}</div>` : ''}
             <div class="card-actions">
-                ${task.status !== 'todo' ? `<button class="btn btn-xs" onclick="updateStatus(${task.id}, 'todo')">Todo</button>` : ''}
-                ${task.status !== 'doing' ? `<button class="btn btn-xs btn-primary" onclick="updateStatus(${task.id}, 'doing')">Doing</button>` : ''}
-                ${task.status !== 'blocked' ? `<button class="btn btn-xs btn-warning" onclick="showBlockModal(${task.id})">Block</button>` : ''}
-                ${task.status !== 'done' ? `<button class="btn btn-xs btn-success" onclick="updateStatus(${task.id}, 'done')">Done</button>` : ''}
+                ${task.status !== 'todo' ? `<button class="btn btn-xs" onclick="updateStatus(${task.id}, 'todo')">待办</button>` : ''}
+                ${task.status !== 'doing' ? `<button class="btn btn-xs btn-primary" onclick="updateStatus(${task.id}, 'doing')">进行</button>` : ''}
+                ${task.status !== 'blocked' ? `<button class="btn btn-xs btn-warning" onclick="showBlockModal(${task.id})">阻塞</button>` : ''}
+                ${task.status !== 'done' ? `<button class="btn btn-xs btn-success" onclick="updateStatus(${task.id}, 'done')">完成</button>` : ''}
             </div>
         </div>
     `).join('');
@@ -166,7 +166,7 @@ async function confirmBlock() {
     const blockReasonDetail = document.getElementById('blockReasonDetail').value;
 
     if (!blockReason) {
-        showToast('Please select a block reason', 'error');
+        showToast('请选择阻塞原因', 'error');
         return;
     }
 
@@ -184,14 +184,14 @@ async function confirmBlock() {
 
         const result = await response.json();
         if (result.success) {
-            showToast('Task blocked', 'success');
+            showToast('任务已阻塞', 'success');
             closeBlockModal();
             loadKanban();
         } else {
-            showToast(result.message || 'Failed to block task', 'error');
+            showToast(result.message || '操作失败', 'error');
         }
     } catch (error) {
-        showToast('Network error', 'error');
+        showToast('网络错误', 'error');
     }
 }
 
@@ -205,13 +205,13 @@ async function updateStatus(taskId, status) {
 
         const result = await response.json();
         if (result.success) {
-            showToast('Status updated', 'success');
+            showToast('状态已更新', 'success');
             loadKanban();
         } else {
-            showToast(result.message || 'Failed to update status', 'error');
+            showToast(result.message || '更新失败', 'error');
         }
     } catch (error) {
-        showToast('Network error', 'error');
+        showToast('网络错误', 'error');
     }
 }
 </script>

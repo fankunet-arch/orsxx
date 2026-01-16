@@ -1,10 +1,10 @@
 <div class="page-header">
-    <h2>Task List</h2>
+    <h2>任务列表</h2>
     <div class="page-actions">
         <select id="projectFilter" onchange="loadTasks()">
-            <option value="">All Projects</option>
+            <option value="">全部项目</option>
         </select>
-        <button class="btn btn-primary" onclick="showBulkActions()">Bulk Update</button>
+        <button class="btn btn-primary" onclick="showBulkActions()">批量更新</button>
     </div>
 </div>
 
@@ -13,58 +13,72 @@
         <thead>
             <tr>
                 <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                <th>Title</th>
-                <th>Status</th>
-                <th>Phase</th>
-                <th>Priority</th>
-                <th>Template</th>
-                <th>Created</th>
-                <th>Actions</th>
+                <th>标题</th>
+                <th>状态</th>
+                <th>阶段</th>
+                <th>优先级</th>
+                <th>模板</th>
+                <th>创建时间</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody id="tasksBody">
-            <tr><td colspan="8" class="loading">Loading...</td></tr>
+            <tr><td colspan="8" class="loading">加载中...</td></tr>
         </tbody>
     </table>
 </div>
 
-<!-- Bulk Update Modal -->
+<!-- 批量更新弹窗 -->
 <div id="bulkModal" class="modal" style="display:none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Bulk Update Tasks</h3>
+            <h3>批量更新任务</h3>
             <button class="modal-close" onclick="closeBulkModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <p id="bulkCount">0 tasks selected</p>
+            <p id="bulkCount">已选择 0 个任务</p>
             <div class="form-group">
-                <label>Phase</label>
+                <label>阶段</label>
                 <select id="bulkPhase">
-                    <option value="">-- No Change --</option>
+                    <option value="">-- 不修改 --</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Mark as Template</label>
+                <label>标记为模板</label>
                 <select id="bulkTemplate">
-                    <option value="">-- No Change --</option>
-                    <option value="1">Yes</option>
-                    <option value="0">No</option>
+                    <option value="">-- 不修改 --</option>
+                    <option value="1">是</option>
+                    <option value="0">否</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Template Tags (comma-separated)</label>
-                <input type="text" id="bulkTags" placeholder="e.g. must_buy, it">
+                <label>模板标签（逗号分隔）</label>
+                <input type="text" id="bulkTags" placeholder="例如：must_buy, it">
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeBulkModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="executeBulkUpdate()">Apply Changes</button>
+            <button class="btn btn-outline" onclick="closeBulkModal()">取消</button>
+            <button class="btn btn-primary" onclick="executeBulkUpdate()">应用更改</button>
         </div>
     </div>
 </div>
 
 <script>
 let phases = [];
+
+const statusNames = {
+    'todo': '待办',
+    'doing': '进行中',
+    'blocked': '阻塞',
+    'done': '已完成'
+};
+
+const priorityNames = {
+    'low': '低',
+    'medium': '中',
+    'high': '高',
+    'urgent': '紧急'
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     loadProjects();
@@ -86,7 +100,7 @@ async function loadProjects() {
             });
         }
     } catch (error) {
-        console.error('Failed to load projects:', error);
+        console.error('加载项目失败:', error);
     }
 }
 
@@ -105,7 +119,7 @@ async function loadPhases() {
             });
         }
     } catch (error) {
-        console.error('Failed to load phases:', error);
+        console.error('加载阶段失败:', error);
     }
 }
 
@@ -126,22 +140,22 @@ async function loadTasks() {
                 <tr>
                     <td><input type="checkbox" class="task-checkbox" value="${task.id}"></td>
                     <td>${escapeHtml(task.title)}</td>
-                    <td><span class="status-badge status-${task.status}">${task.status}</span></td>
+                    <td><span class="status-badge status-${task.status}">${statusNames[task.status] || task.status}</span></td>
                     <td>${phase ? escapeHtml(phase.phase_name) : '-'}</td>
-                    <td>${task.priority || '-'}</td>
-                    <td>${task.template_flag ? '<span class="badge badge-success">Yes</span>' : '-'}</td>
+                    <td>${priorityNames[task.priority] || '-'}</td>
+                    <td>${task.template_flag ? '<span class="badge badge-success">是</span>' : '-'}</td>
                     <td>${formatDate(task.created_at)}</td>
                     <td>
-                        <button class="btn btn-xs" onclick="editTask(${task.id})">Edit</button>
+                        <button class="btn btn-xs" onclick="editTask(${task.id})">编辑</button>
                     </td>
                 </tr>
                 `;
             }).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No tasks found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">暂无任务</td></tr>';
         }
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="8" class="error-state">Failed to load tasks</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="error-state">加载失败</td></tr>';
     }
 }
 
@@ -157,10 +171,10 @@ function getSelectedIds() {
 function showBulkActions() {
     const ids = getSelectedIds();
     if (ids.length === 0) {
-        showToast('Please select at least one task', 'warning');
+        showToast('请至少选择一个任务', 'warning');
         return;
     }
-    document.getElementById('bulkCount').textContent = ids.length + ' tasks selected';
+    document.getElementById('bulkCount').textContent = '已选择 ' + ids.length + ' 个任务';
     document.getElementById('bulkModal').style.display = 'flex';
 }
 
@@ -188,24 +202,23 @@ async function executeBulkUpdate() {
 
         const result = await response.json();
         if (result.success) {
-            showToast(result.message, 'success');
+            showToast('批量更新成功！', 'success');
             closeBulkModal();
             loadTasks();
         } else {
-            showToast(result.message || 'Bulk update failed', 'error');
+            showToast(result.message || '批量更新失败', 'error');
         }
     } catch (error) {
-        showToast('Network error', 'error');
+        showToast('网络错误', 'error');
     }
 }
 
 function editTask(id) {
-    // For simplicity, redirect to a simple edit or show modal
-    showToast('Edit feature - implement as needed', 'info');
+    showToast('编辑功能 - 待实现', 'info');
 }
 
 function formatDate(dateStr) {
     if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
 }
 </script>

@@ -6,37 +6,37 @@ $user = ors_current_user();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ORS - Search</title>
+    <title>ORS - 搜索</title>
     <link rel="stylesheet" href="/ors/css/mobile.css">
 </head>
 <body>
     <header class="app-header">
         <div class="header-content">
             <a href="/ors/" class="back-btn">&larr;</a>
-            <h1>Search</h1>
+            <h1>搜索</h1>
         </div>
     </header>
 
     <main class="main-content">
         <div class="search-box">
-            <input type="search" id="searchInput" placeholder="Search tasks & purchases..."
+            <input type="search" id="searchInput" placeholder="搜索任务和采购..."
                    autocomplete="off" autofocus>
         </div>
 
         <div class="tab-bar">
-            <button class="tab-btn active" data-tab="tasks">Tasks</button>
-            <button class="tab-btn" data-tab="purchases">Purchases</button>
+            <button class="tab-btn active" data-tab="tasks">任务</button>
+            <button class="tab-btn" data-tab="purchases">采购</button>
         </div>
 
         <div id="tasksTab" class="tab-content active">
             <div id="taskResults" class="records-list">
-                <div class="empty-state">Enter a keyword to search</div>
+                <div class="empty-state">输入关键词开始搜索</div>
             </div>
         </div>
 
         <div id="purchasesTab" class="tab-content">
             <div id="purchaseResults" class="records-list">
-                <div class="empty-state">Enter a keyword to search</div>
+                <div class="empty-state">输入关键词开始搜索</div>
             </div>
         </div>
     </main>
@@ -47,7 +47,14 @@ $user = ors_current_user();
     <script>
         let searchTimeout;
 
-        // Tab switching
+        const statusNames = {
+            'todo': '待办',
+            'doing': '进行中',
+            'blocked': '阻塞',
+            'done': '已完成'
+        };
+
+        // 标签页切换
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -58,19 +65,19 @@ $user = ors_current_user();
             });
         });
 
-        // Search input
+        // 搜索输入
         document.getElementById('searchInput').addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const query = this.value.trim();
 
             if (query.length < 2) {
-                document.getElementById('taskResults').innerHTML = '<div class="empty-state">Enter at least 2 characters</div>';
-                document.getElementById('purchaseResults').innerHTML = '<div class="empty-state">Enter at least 2 characters</div>';
+                document.getElementById('taskResults').innerHTML = '<div class="empty-state">请输入至少2个字符</div>';
+                document.getElementById('purchaseResults').innerHTML = '<div class="empty-state">请输入至少2个字符</div>';
                 return;
             }
 
-            document.getElementById('taskResults').innerHTML = '<div class="loading">Searching...</div>';
-            document.getElementById('purchaseResults').innerHTML = '<div class="loading">Searching...</div>';
+            document.getElementById('taskResults').innerHTML = '<div class="loading">搜索中...</div>';
+            document.getElementById('purchaseResults').innerHTML = '<div class="loading">搜索中...</div>';
 
             searchTimeout = setTimeout(() => {
                 searchTasks(query);
@@ -86,14 +93,14 @@ $user = ors_current_user();
 
                 if (result.success && result.data.tasks) {
                     if (result.data.tasks.length === 0) {
-                        container.innerHTML = '<div class="empty-state">No tasks found</div>';
+                        container.innerHTML = '<div class="empty-state">未找到相关任务</div>';
                         return;
                     }
 
                     container.innerHTML = result.data.tasks.map(task => `
                         <div class="record-card">
                             <div class="record-header">
-                                <span class="status-badge status-${task.status}">${task.status}</span>
+                                <span class="status-badge status-${task.status}">${statusNames[task.status] || task.status}</span>
                                 <span class="record-date">${formatDate(task.created_at)}</span>
                             </div>
                             <div class="record-title">${escapeHtml(task.title)}</div>
@@ -101,10 +108,10 @@ $user = ors_current_user();
                         </div>
                     `).join('');
                 } else {
-                    container.innerHTML = '<div class="error-state">Search failed</div>';
+                    container.innerHTML = '<div class="error-state">搜索失败</div>';
                 }
             } catch (error) {
-                container.innerHTML = '<div class="error-state">Network error</div>';
+                container.innerHTML = '<div class="error-state">网络错误</div>';
             }
         }
 
@@ -116,7 +123,7 @@ $user = ors_current_user();
 
                 if (result.success && result.data.purchases) {
                     if (result.data.purchases.length === 0) {
-                        container.innerHTML = '<div class="empty-state">No purchases found</div>';
+                        container.innerHTML = '<div class="empty-state">未找到相关采购</div>';
                         return;
                     }
 
@@ -126,25 +133,25 @@ $user = ors_current_user();
                                 <span class="currency-badge">${purchase.currency}</span>
                                 <span class="record-price">${formatPrice(purchase.unit_price, purchase.currency)}</span>
                             </div>
-                            <div class="record-title">${escapeHtml(purchase.free_text_item || purchase.linked_item_name || 'Unknown')}</div>
+                            <div class="record-title">${escapeHtml(purchase.free_text_item || purchase.linked_item_name || '未命名')}</div>
                             ${purchase.project_name ? `<div class="record-project">${escapeHtml(purchase.project_name)}</div>` : ''}
                         </div>
                     `).join('');
                 } else {
-                    container.innerHTML = '<div class="error-state">Search failed</div>';
+                    container.innerHTML = '<div class="error-state">搜索失败</div>';
                 }
             } catch (error) {
-                container.innerHTML = '<div class="error-state">Network error</div>';
+                container.innerHTML = '<div class="error-state">网络错误</div>';
             }
         }
 
         function formatDate(dateStr) {
             const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
         }
 
         function formatPrice(amount, currency) {
-            return new Intl.NumberFormat('en-US', {
+            return new Intl.NumberFormat('zh-CN', {
                 style: 'decimal',
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2

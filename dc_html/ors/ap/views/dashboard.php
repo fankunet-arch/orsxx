@@ -1,49 +1,56 @@
 <div class="page-header">
-    <h2>Dashboard</h2>
+    <h2>仪表板</h2>
 </div>
 
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-value" id="statProjects">-</div>
-        <div class="stat-label">Active Projects</div>
+        <div class="stat-label">进行中项目</div>
     </div>
     <div class="stat-card">
         <div class="stat-value" id="statTasks">-</div>
-        <div class="stat-label">Total Tasks</div>
+        <div class="stat-label">任务总数</div>
     </div>
     <div class="stat-card">
         <div class="stat-value" id="statPurchases">-</div>
-        <div class="stat-label">Total Purchases</div>
+        <div class="stat-label">采购记录</div>
     </div>
     <div class="stat-card">
         <div class="stat-value" id="statCost">-</div>
-        <div class="stat-label">Total Cost (EUR)</div>
+        <div class="stat-label">总成本 (EUR)</div>
     </div>
 </div>
 
 <div class="dashboard-grid">
     <div class="dashboard-card">
         <div class="card-header">
-            <h3>Recent Tasks</h3>
-            <a href="/ors/ap/?action=tasks" class="btn btn-sm btn-outline">View All</a>
+            <h3>最近任务</h3>
+            <a href="/ors/ap/?action=tasks" class="btn btn-sm btn-outline">查看全部</a>
         </div>
         <div class="card-body" id="recentTasks">
-            <div class="loading">Loading...</div>
+            <div class="loading">加载中...</div>
         </div>
     </div>
 
     <div class="dashboard-card">
         <div class="card-header">
-            <h3>Recent Purchases</h3>
-            <a href="/ors/ap/?action=purchases" class="btn btn-sm btn-outline">View All</a>
+            <h3>最近采购</h3>
+            <a href="/ors/ap/?action=purchases" class="btn btn-sm btn-outline">查看全部</a>
         </div>
         <div class="card-body" id="recentPurchases">
-            <div class="loading">Loading...</div>
+            <div class="loading">加载中...</div>
         </div>
     </div>
 </div>
 
 <script>
+const statusNames = {
+    'todo': '待办',
+    'doing': '进行中',
+    'blocked': '阻塞',
+    'done': '已完成'
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardStats();
     loadRecentTasks();
@@ -60,7 +67,7 @@ async function loadDashboardStats() {
             document.getElementById('statPurchases').textContent = result.data.stats.total_purchases || 0;
         }
     } catch (error) {
-        console.error('Failed to load stats:', error);
+        console.error('加载统计数据失败:', error);
     }
 
     try {
@@ -70,7 +77,7 @@ async function loadDashboardStats() {
             document.getElementById('statCost').textContent = formatNumber(result.data.total_eur || 0);
         }
     } catch (error) {
-        console.error('Failed to load cost:', error);
+        console.error('加载成本数据失败:', error);
     }
 }
 
@@ -82,15 +89,15 @@ async function loadRecentTasks() {
         if (result.success && result.data.tasks.length > 0) {
             container.innerHTML = result.data.tasks.slice(0, 5).map(task => `
                 <div class="list-item">
-                    <span class="status-badge status-${task.status}">${task.status}</span>
+                    <span class="status-badge status-${task.status}">${statusNames[task.status] || task.status}</span>
                     <span class="item-title">${escapeHtml(task.title)}</span>
                 </div>
             `).join('');
         } else {
-            container.innerHTML = '<div class="empty-state">No recent tasks</div>';
+            container.innerHTML = '<div class="empty-state">暂无最近任务</div>';
         }
     } catch (error) {
-        container.innerHTML = '<div class="error-state">Failed to load</div>';
+        container.innerHTML = '<div class="error-state">加载失败</div>';
     }
 }
 
@@ -103,19 +110,19 @@ async function loadRecentPurchases() {
             container.innerHTML = result.data.purchases.slice(0, 5).map(p => `
                 <div class="list-item">
                     <span class="currency-badge">${p.currency}</span>
-                    <span class="item-title">${escapeHtml(p.free_text_item || p.linked_item_name || 'Unknown')}</span>
+                    <span class="item-title">${escapeHtml(p.free_text_item || p.linked_item_name || '未命名')}</span>
                     <span class="item-price">${formatNumber(p.total_price_eur)} EUR</span>
                 </div>
             `).join('');
         } else {
-            container.innerHTML = '<div class="empty-state">No recent purchases</div>';
+            container.innerHTML = '<div class="empty-state">暂无最近采购</div>';
         }
     } catch (error) {
-        container.innerHTML = '<div class="error-state">Failed to load</div>';
+        container.innerHTML = '<div class="error-state">加载失败</div>';
     }
 }
 
 function formatNumber(num) {
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+    return new Intl.NumberFormat('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
 }
 </script>

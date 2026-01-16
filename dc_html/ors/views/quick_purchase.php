@@ -6,14 +6,14 @@ $user = ors_current_user();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ORS - Quick Purchase</title>
+    <title>ORS - 快速采购</title>
     <link rel="stylesheet" href="/ors/css/mobile.css">
 </head>
 <body>
     <header class="app-header">
         <div class="header-content">
             <a href="/ors/" class="back-btn">&larr;</a>
-            <h1>Quick Purchase</h1>
+            <h1>快速采购</h1>
         </div>
     </header>
 
@@ -22,21 +22,21 @@ $user = ors_current_user();
             <?php echo ors_csrf_field(); ?>
 
             <div class="form-group">
-                <label for="free_text_item">Item Name *</label>
+                <label for="free_text_item">物品名称 *</label>
                 <input type="text" id="free_text_item" name="free_text_item" required
-                       placeholder="e.g. Receipt printer"
+                       placeholder="例如：小票打印机"
                        autofocus autocomplete="off">
             </div>
 
             <div class="form-row">
                 <div class="form-group flex-2">
-                    <label for="unit_price">Unit Price *</label>
+                    <label for="unit_price">单价 *</label>
                     <input type="number" id="unit_price" name="unit_price" required
                            step="0.01" min="0" placeholder="0.00">
                 </div>
 
                 <div class="form-group flex-1">
-                    <label for="currency">Currency</label>
+                    <label for="currency">币种</label>
                     <select id="currency" name="currency">
                         <option value="EUR" selected>EUR</option>
                         <option value="CNY">CNY</option>
@@ -47,34 +47,34 @@ $user = ors_current_user();
 
             <div class="form-row">
                 <div class="form-group flex-1">
-                    <label for="quantity">Quantity</label>
+                    <label for="quantity">数量</label>
                     <input type="number" id="quantity" name="quantity"
                            value="1" min="1" step="1">
                 </div>
 
                 <div class="form-group flex-2">
-                    <label for="fx_rate_to_eur">FX Rate to EUR</label>
+                    <label for="fx_rate_to_eur">汇率（转EUR）</label>
                     <input type="number" id="fx_rate_to_eur" name="fx_rate_to_eur"
-                           step="0.000001" placeholder="Auto">
+                           step="0.000001" placeholder="自动">
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="project_id">Project (optional)</label>
+                <label for="project_id">所属项目（可选）</label>
                 <select id="project_id" name="project_id">
-                    <option value="">-- No Project --</option>
+                    <option value="">-- 不选择项目 --</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="notes">Notes (optional)</label>
+                <label for="notes">备注（可选）</label>
                 <textarea id="notes" name="notes" rows="2"
-                          placeholder="Additional notes..."></textarea>
+                          placeholder="补充说明..."></textarea>
             </div>
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary btn-block btn-large">
-                    Save Purchase
+                    保存采购
                 </button>
             </div>
         </form>
@@ -84,10 +84,10 @@ $user = ors_current_user();
 
     <script src="/ors/js/mobile.js"></script>
     <script>
-        // Load projects
+        // 加载项目列表
         loadProjects();
 
-        // Set default FX rates based on currency
+        // 币种默认汇率
         const defaultRates = {
             'EUR': null,
             'CNY': <?php echo ORS_DEFAULT_FX_CNY_EUR; ?>,
@@ -101,11 +101,11 @@ $user = ors_current_user();
                 fxInput.disabled = true;
             } else {
                 fxInput.disabled = false;
-                fxInput.placeholder = defaultRates[this.value] || 'Enter rate';
+                fxInput.placeholder = defaultRates[this.value] || '输入汇率';
             }
         });
 
-        // Initialize
+        // 初始化
         document.getElementById('fx_rate_to_eur').disabled = true;
 
         async function loadProjects() {
@@ -122,7 +122,7 @@ $user = ors_current_user();
                     });
                 }
             } catch (error) {
-                console.error('Failed to load projects:', error);
+                console.error('加载项目失败:', error);
             }
         }
 
@@ -131,7 +131,7 @@ $user = ors_current_user();
 
             const submitBtn = this.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Saving...';
+            submitBtn.textContent = '保存中...';
 
             const formData = new FormData(this);
             const currency = formData.get('currency');
@@ -145,7 +145,7 @@ $user = ors_current_user();
                 notes: formData.get('notes') || null
             };
 
-            // Add FX rate if not EUR
+            // 非EUR时添加汇率
             if (currency !== 'EUR') {
                 const fxRate = formData.get('fx_rate_to_eur');
                 data.fx_rate_to_eur = fxRate ? parseFloat(fxRate) : defaultRates[currency];
@@ -161,21 +161,21 @@ $user = ors_current_user();
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast('Purchase saved!', 'success');
-                    // Clear form for next entry
+                    showToast('采购已保存！', 'success');
+                    // 清空表单以便继续录入
                     document.getElementById('free_text_item').value = '';
                     document.getElementById('unit_price').value = '';
                     document.getElementById('quantity').value = '1';
                     document.getElementById('notes').value = '';
                     document.getElementById('free_text_item').focus();
                 } else {
-                    showToast(result.message || 'Save failed', 'error');
+                    showToast(result.message || '保存失败', 'error');
                 }
             } catch (error) {
-                showToast('Network error', 'error');
+                showToast('网络错误', 'error');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Save Purchase';
+                submitBtn.textContent = '保存采购';
             }
         });
     </script>

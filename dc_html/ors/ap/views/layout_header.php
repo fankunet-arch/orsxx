@@ -4,65 +4,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORS Control Panel</title>
+    <title>ORS 控制室</title>
     <link rel="stylesheet" href="/ors/ap/css/admin.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar Navigation -->
+        <!-- 侧边导航 -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <h1>ORS</h1>
-                <span class="badge badge-primary">Control</span>
+                <span class="badge badge-primary">控制室</span>
             </div>
 
             <ul class="nav-menu">
                 <li class="nav-item <?php echo ($action ?? '') === 'dashboard' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=dashboard">Dashboard</a>
+                    <a href="/ors/ap/?action=dashboard">仪表板</a>
                 </li>
-                <li class="nav-section">Tasks</li>
+                <li class="nav-section">任务管理</li>
                 <li class="nav-item <?php echo ($action ?? '') === 'tasks' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=tasks">Task List</a>
+                    <a href="/ors/ap/?action=tasks">任务列表</a>
                 </li>
                 <li class="nav-item <?php echo ($action ?? '') === 'kanban' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=kanban">Kanban Board</a>
+                    <a href="/ors/ap/?action=kanban">看板视图</a>
                 </li>
-                <li class="nav-section">Procurement</li>
+                <li class="nav-section">采购管理</li>
                 <li class="nav-item <?php echo ($action ?? '') === 'purchases' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=purchases">Purchases</a>
+                    <a href="/ors/ap/?action=purchases">采购列表</a>
                 </li>
                 <li class="nav-item <?php echo ($action ?? '') === 'items' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=items">Item Library</a>
+                    <a href="/ors/ap/?action=items">物品库</a>
                 </li>
                 <li class="nav-item <?php echo ($action ?? '') === 'vendors' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=vendors">Vendors</a>
+                    <a href="/ors/ap/?action=vendors">供应商</a>
                 </li>
-                <li class="nav-section">Templates</li>
+                <li class="nav-section">模板中心</li>
                 <li class="nav-item <?php echo ($action ?? '') === 'templates' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=templates">Template Library</a>
+                    <a href="/ors/ap/?action=templates">模板库</a>
                 </li>
                 <li class="nav-item <?php echo ($action ?? '') === 'lessons' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=lessons">Lessons Learned</a>
+                    <a href="/ors/ap/?action=lessons">踩坑记录</a>
                 </li>
-                <li class="nav-section">Management</li>
+                <li class="nav-section">项目管理</li>
                 <li class="nav-item <?php echo ($action ?? '') === 'projects' ? 'active' : ''; ?>">
-                    <a href="/ors/ap/?action=projects">Projects</a>
+                    <a href="/ors/ap/?action=projects">项目列表</a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Main Content Area -->
+        <!-- 主内容区域 -->
         <div class="main-wrapper">
-            <!-- Top Header -->
+            <!-- 顶部栏 -->
             <header class="top-header">
                 <div class="header-left">
                     <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
                 </div>
                 <div class="header-right">
                     <span class="user-name"><?php echo ors_e($user['display_name'] ?? $user['username']); ?></span>
-                    <a href="/ors/ap/?action=logout" class="btn btn-sm btn-outline">Logout</a>
+                    <a href="/ors/ap/?action=logout" class="btn btn-sm btn-outline">退出</a>
                 </div>
             </header>
 
-            <!-- Page Content -->
+            <!-- 页面内容 -->
             <main class="main-content">

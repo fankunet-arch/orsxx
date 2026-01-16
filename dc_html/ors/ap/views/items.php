@@ -1,7 +1,7 @@
 <div class="page-header">
-    <h2>Item Library</h2>
+    <h2>物品库</h2>
     <div class="page-actions">
-        <button class="btn btn-primary" onclick="showAddItemModal()">+ Add Item</button>
+        <button class="btn btn-primary" onclick="showAddItemModal()">+ 新增物品</button>
     </div>
 </div>
 
@@ -9,93 +9,99 @@
     <table class="data-table" id="itemsTable">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Unit</th>
-                <th>Must Buy</th>
-                <th>Long Lead</th>
-                <th>Lead Time</th>
-                <th>Template</th>
-                <th>Actions</th>
+                <th>名称</th>
+                <th>分类</th>
+                <th>单位</th>
+                <th>必买等级</th>
+                <th>长周期</th>
+                <th>采购周期</th>
+                <th>模板</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody id="itemsBody">
-            <tr><td colspan="8" class="loading">Loading...</td></tr>
+            <tr><td colspan="8" class="loading">加载中...</td></tr>
         </tbody>
     </table>
 </div>
 
-<!-- Add/Edit Item Modal -->
+<!-- 新增/编辑物品弹窗 -->
 <div id="itemModal" class="modal" style="display:none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="itemModalTitle">Add Item</h3>
+            <h3 id="itemModalTitle">新增物品</h3>
             <button class="modal-close" onclick="closeItemModal()">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="itemId">
             <div class="form-group">
-                <label>Item Name *</label>
+                <label>物品名称 *</label>
                 <input type="text" id="itemName" required>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Category</label>
+                    <label>分类</label>
                     <select id="itemCategory">
-                        <option value="">-- Select --</option>
-                        <option value="it_devices">IT Devices</option>
-                        <option value="furniture">Furniture</option>
-                        <option value="equipment">Equipment</option>
-                        <option value="consumables">Consumables</option>
-                        <option value="other">Other</option>
+                        <option value="">-- 请选择 --</option>
+                        <option value="it_devices">IT设备</option>
+                        <option value="furniture">家具</option>
+                        <option value="equipment">设备</option>
+                        <option value="consumables">耗材</option>
+                        <option value="other">其他</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Unit</label>
+                    <label>单位</label>
                     <input type="text" id="itemUnit" value="pcs">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Must Buy Level</label>
+                    <label>必买等级</label>
                     <select id="itemMustBuy">
-                        <option value="must">Must</option>
-                        <option value="recommended" selected>Recommended</option>
-                        <option value="optional">Optional</option>
+                        <option value="must">必买</option>
+                        <option value="recommended" selected>推荐</option>
+                        <option value="optional">可选</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Lead Time (days)</label>
+                    <label>采购周期（天）</label>
                     <input type="number" id="itemLeadTime" min="0">
                 </div>
             </div>
             <div class="form-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="itemLongLead">
-                    <span>Long Lead Item</span>
+                    <span>长周期采购项</span>
                 </label>
             </div>
             <div class="form-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="itemTemplate" checked>
-                    <span>Add to Template Library</span>
+                    <span>加入模板库</span>
                 </label>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeItemModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="saveItem()">Save</button>
+            <button class="btn btn-outline" onclick="closeItemModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveItem()">保存</button>
         </div>
     </div>
 </div>
 
 <script>
 const categories = {
-    'it_devices': 'IT Devices',
-    'furniture': 'Furniture',
-    'equipment': 'Equipment',
-    'consumables': 'Consumables',
-    'other': 'Other'
+    'it_devices': 'IT设备',
+    'furniture': '家具',
+    'equipment': '设备',
+    'consumables': '耗材',
+    'other': '其他'
+};
+
+const mustBuyLevels = {
+    'must': '必买',
+    'recommended': '推荐',
+    'optional': '可选'
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -115,25 +121,25 @@ async function loadItems() {
                     <td>${escapeHtml(item.item_name)}</td>
                     <td>${categories[item.category] || '-'}</td>
                     <td>${item.unit || '-'}</td>
-                    <td>${item.must_buy_level || '-'}</td>
-                    <td>${item.long_lead_flag ? 'Yes' : '-'}</td>
-                    <td>${item.lead_time_days || '-'} days</td>
-                    <td>${item.template_flag ? '<span class="badge badge-success">Yes</span>' : '-'}</td>
+                    <td>${mustBuyLevels[item.must_buy_level] || '-'}</td>
+                    <td>${item.long_lead_flag ? '是' : '-'}</td>
+                    <td>${item.lead_time_days ? item.lead_time_days + ' 天' : '-'}</td>
+                    <td>${item.template_flag ? '<span class="badge badge-success">是</span>' : '-'}</td>
                     <td>
-                        <button class="btn btn-xs" onclick="editItem(${item.id})">Edit</button>
+                        <button class="btn btn-xs" onclick="editItem(${item.id})">编辑</button>
                     </td>
                 </tr>
             `).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No items found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">暂无物品</td></tr>';
         }
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="8" class="error-state">Failed to load items</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="error-state">加载失败</td></tr>';
     }
 }
 
 function showAddItemModal() {
-    document.getElementById('itemModalTitle').textContent = 'Add Item';
+    document.getElementById('itemModalTitle').textContent = '新增物品';
     document.getElementById('itemId').value = '';
     document.getElementById('itemName').value = '';
     document.getElementById('itemCategory').value = '';
@@ -162,7 +168,7 @@ async function saveItem() {
     };
 
     if (!data.item_name) {
-        showToast('Item name is required', 'error');
+        showToast('物品名称不能为空', 'error');
         return;
     }
 
@@ -178,18 +184,18 @@ async function saveItem() {
 
         const result = await response.json();
         if (result.success) {
-            showToast('Item saved!', 'success');
+            showToast('物品已保存！', 'success');
             closeItemModal();
             loadItems();
         } else {
-            showToast(result.message || 'Failed to save', 'error');
+            showToast(result.message || '保存失败', 'error');
         }
     } catch (error) {
-        showToast('Network error', 'error');
+        showToast('网络错误', 'error');
     }
 }
 
 function editItem(id) {
-    showToast('Edit feature - load item and show modal', 'info');
+    showToast('编辑功能 - 待实现', 'info');
 }
 </script>

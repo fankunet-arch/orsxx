@@ -1,7 +1,7 @@
 <div class="page-header">
-    <h2>Projects</h2>
+    <h2>项目列表</h2>
     <div class="page-actions">
-        <button class="btn btn-primary" onclick="showAddProjectModal()">+ New Project</button>
+        <button class="btn btn-primary" onclick="showAddProjectModal()">+ 新建项目</button>
     </div>
 </div>
 
@@ -9,104 +9,117 @@
     <table class="data-table" id="projectsTable">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>City</th>
-                <th>Area</th>
-                <th>Target Open</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>项目名称</th>
+                <th>类型</th>
+                <th>城市</th>
+                <th>面积</th>
+                <th>目标开业日</th>
+                <th>状态</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody id="projectsBody">
-            <tr><td colspan="7" class="loading">Loading...</td></tr>
+            <tr><td colspan="7" class="loading">加载中...</td></tr>
         </tbody>
     </table>
 </div>
 
-<!-- Add/Edit Project Modal -->
+<!-- 新建/编辑项目弹窗 -->
 <div id="projectModal" class="modal" style="display:none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="projectModalTitle">New Project</h3>
+            <h3 id="projectModalTitle">新建项目</h3>
             <button class="modal-close" onclick="closeProjectModal()">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="projectId">
             <div class="form-group">
-                <label>Project Name *</label>
+                <label>项目名称 *</label>
                 <input type="text" id="projectName" required>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Type</label>
+                    <label>类型</label>
                     <select id="projectType">
-                        <option value="cafeteria">Cafeteria</option>
-                        <option value="restaurant">Restaurant</option>
-                        <option value="retail">Retail</option>
+                        <option value="cafeteria">咖啡厅</option>
+                        <option value="restaurant">餐厅</option>
+                        <option value="retail">零售店</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>City</label>
+                    <label>城市</label>
                     <input type="text" id="projectCity">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Area (m2)</label>
+                    <label>面积（平方米）</label>
                     <input type="number" id="projectArea" step="0.01">
                 </div>
                 <div class="form-group">
-                    <label>Target Open Date</label>
+                    <label>目标开业日期</label>
                     <input type="date" id="projectOpenDate">
                 </div>
             </div>
             <div class="form-group">
-                <label>Address</label>
+                <label>地址</label>
                 <textarea id="projectAddress" rows="2"></textarea>
             </div>
             <div class="form-group">
-                <label>Status</label>
+                <label>状态</label>
                 <select id="projectStatus">
-                    <option value="planning">Planning</option>
-                    <option value="active">Active</option>
-                    <option value="completed">Completed</option>
-                    <option value="archived">Archived</option>
+                    <option value="planning">规划中</option>
+                    <option value="active">进行中</option>
+                    <option value="completed">已完成</option>
+                    <option value="archived">已归档</option>
                 </select>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeProjectModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="saveProject()">Save</button>
+            <button class="btn btn-outline" onclick="closeProjectModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveProject()">保存</button>
         </div>
     </div>
 </div>
 
-<!-- Generate from Template Modal -->
+<!-- 从模板生成弹窗 -->
 <div id="generateModal" class="modal" style="display:none;">
     <div class="modal-content modal-sm">
         <div class="modal-header">
-            <h3>Generate from Template</h3>
+            <h3>从模板生成</h3>
             <button class="modal-close" onclick="closeGenerateModal()">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="generateProjectId">
-            <p>This will generate:</p>
+            <p>将自动生成以下内容：</p>
             <ul>
-                <li>Tasks from task templates</li>
-                <li>Purchase list from item templates</li>
-                <li>Check items from lesson templates</li>
+                <li>任务清单（来自任务模板）</li>
+                <li>采购清单（来自物品模板）</li>
+                <li>检查清单（来自踩坑记录模板）</li>
             </ul>
-            <p class="text-warning">Target open date will be used to calculate deadlines.</p>
+            <p class="text-warning">将根据目标开业日期自动计算截止日期。</p>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeGenerateModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="executeGenerate()">Generate</button>
+            <button class="btn btn-outline" onclick="closeGenerateModal()">取消</button>
+            <button class="btn btn-primary" onclick="executeGenerate()">一键生成</button>
         </div>
     </div>
 </div>
 
 <script>
+const statusNames = {
+    'planning': '规划中',
+    'active': '进行中',
+    'completed': '已完成',
+    'archived': '已归档'
+};
+
+const typeNames = {
+    'cafeteria': '咖啡厅',
+    'restaurant': '餐厅',
+    'retail': '零售店'
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     loadProjects();
 });
@@ -122,27 +135,27 @@ async function loadProjects() {
             tbody.innerHTML = result.data.projects.map(p => `
                 <tr>
                     <td>${escapeHtml(p.project_name)}</td>
-                    <td>${p.project_type || '-'}</td>
+                    <td>${typeNames[p.project_type] || p.project_type || '-'}</td>
                     <td>${escapeHtml(p.city || '-')}</td>
-                    <td>${p.area_m2 ? p.area_m2 + ' m2' : '-'}</td>
+                    <td>${p.area_m2 ? p.area_m2 + ' m²' : '-'}</td>
                     <td>${p.target_open_date || '-'}</td>
-                    <td><span class="status-badge status-${p.status}">${p.status}</span></td>
+                    <td><span class="status-badge status-${p.status}">${statusNames[p.status] || p.status}</span></td>
                     <td>
-                        <button class="btn btn-xs" onclick="editProject(${p.id})">Edit</button>
-                        <button class="btn btn-xs btn-primary" onclick="showGenerateModal(${p.id})">Generate</button>
+                        <button class="btn btn-xs" onclick="editProject(${p.id})">编辑</button>
+                        <button class="btn btn-xs btn-primary" onclick="showGenerateModal(${p.id})">生成</button>
                     </td>
                 </tr>
             `).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No projects found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无项目</td></tr>';
         }
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="7" class="error-state">Failed to load projects</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="error-state">加载失败</td></tr>';
     }
 }
 
 function showAddProjectModal() {
-    document.getElementById('projectModalTitle').textContent = 'New Project';
+    document.getElementById('projectModalTitle').textContent = '新建项目';
     document.getElementById('projectId').value = '';
     document.getElementById('projectName').value = '';
     document.getElementById('projectType').value = 'cafeteria';
@@ -171,7 +184,7 @@ async function saveProject() {
     };
 
     if (!data.project_name) {
-        showToast('Project name is required', 'error');
+        showToast('项目名称不能为空', 'error');
         return;
     }
 
@@ -187,19 +200,19 @@ async function saveProject() {
 
         const result = await response.json();
         if (result.success) {
-            showToast('Project saved!', 'success');
+            showToast('项目已保存！', 'success');
             closeProjectModal();
             loadProjects();
         } else {
-            showToast(result.message || 'Failed to save', 'error');
+            showToast(result.message || '保存失败', 'error');
         }
     } catch (error) {
-        showToast('Network error', 'error');
+        showToast('网络错误', 'error');
     }
 }
 
 function editProject(id) {
-    showToast('Edit feature - load project and show modal', 'info');
+    showToast('编辑功能 - 待实现', 'info');
 }
 
 function showGenerateModal(projectId) {
@@ -224,13 +237,13 @@ async function executeGenerate() {
         const result = await response.json();
         if (result.success) {
             const data = result.data;
-            showToast(`Generated: ${data.created_tasks} tasks, ${data.created_purchases} purchases, ${data.created_check_items} check items`, 'success');
+            showToast(`已生成：${data.created_tasks} 个任务，${data.created_purchases} 个采购，${data.created_check_items} 个检查项`, 'success');
             closeGenerateModal();
         } else {
-            showToast(result.message || 'Failed to generate', 'error');
+            showToast(result.message || '生成失败', 'error');
         }
     } catch (error) {
-        showToast('Network error', 'error');
+        showToast('网络错误', 'error');
     }
 }
 </script>
