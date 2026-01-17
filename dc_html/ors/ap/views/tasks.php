@@ -1,5 +1,5 @@
 <div class="page-header">
-    <h2>任务列表</h2>
+    <h2>任务模板</h2>
     <div class="page-actions">
         <select id="projectFilter" onchange="loadTasks()">
             <option value="">全部项目</option>
@@ -7,6 +7,10 @@
         <button class="btn btn-primary" onclick="showBulkActions()">批量更新</button>
     </div>
 </div>
+
+<p class="page-description" style="color: var(--text-light); margin-bottom: 24px;">
+    管理可复用的任务模板。在项目执行过程中发现新的任务类型时，可以在这里沉淀为模板，供下次开业使用。
+</p>
 
 <div class="data-table-wrapper">
     <table class="data-table" id="tasksTable">

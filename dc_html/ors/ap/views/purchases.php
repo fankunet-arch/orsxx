@@ -1,11 +1,26 @@
+<?php
+// 获取当前项目ID
+$projectId = $currentProjectId ?? null;
+?>
+
+<?php if (!$projectId): ?>
+<div class="no-project-warning">
+    请先在顶部选择一个项目，或前往 <a href="/ors/ap/?action=projects">项目中心</a> 创建/选择项目
+</div>
+<?php endif; ?>
+
 <div class="page-header">
-    <h2>采购列表</h2>
+    <h2>项目采购</h2>
     <div class="page-actions">
-        <select id="projectFilter" onchange="loadPurchases()">
+        <select id="projectFilter" onchange="loadPurchases()" style="display:none;">
             <option value="">全部项目</option>
         </select>
     </div>
 </div>
+
+<p class="page-description" style="color: var(--text-light); margin-bottom: 24px;">
+    当前项目的采购记录。可将采购项"沉淀"到物品模板库，供下次开业使用。
+</p>
 
 <div class="summary-bar">
     <div class="summary-item">
@@ -85,6 +100,9 @@
 </div>
 
 <script>
+// 当前项目ID（从PHP传递）
+const purchaseProjectId = <?php echo json_encode($projectId); ?>;
+
 const statusNames = {
     'planned': '计划中',
     'ordered': '已下单',
@@ -94,31 +112,18 @@ const statusNames = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadProjects();
-    loadPurchases();
+    if (purchaseProjectId) {
+        loadPurchases();
+    }
 });
 
-async function loadProjects() {
-    try {
-        const response = await fetch('/ors/api/projects.php?action=list');
-        const result = await response.json();
-        if (result.success) {
-            const select = document.getElementById('projectFilter');
-            result.data.projects.forEach(p => {
-                const option = document.createElement('option');
-                option.value = p.id;
-                option.textContent = p.project_name;
-                select.appendChild(option);
-            });
-        }
-    } catch (error) {
-        console.error('加载项目失败:', error);
-    }
-}
-
 async function loadPurchases() {
-    const projectId = document.getElementById('projectFilter').value;
-    const url = '/ors/api/purchases.php?action=list' + (projectId ? '&project_id=' + projectId : '');
+    // 使用当前项目ID
+    const projectId = purchaseProjectId;
+    if (!projectId) {
+        return;
+    }
+    const url = '/ors/api/purchases.php?action=list&project_id=' + projectId;
 
     const tbody = document.getElementById('purchasesBody');
 

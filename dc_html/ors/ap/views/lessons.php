@@ -1,9 +1,13 @@
 <div class="page-header">
-    <h2>踩坑记录</h2>
+    <h2>踩坑经验</h2>
     <div class="page-actions">
         <button class="btn btn-primary" onclick="showAddLessonModal()">+ 新增记录</button>
     </div>
 </div>
+
+<p class="page-description" style="color: var(--text-light); margin-bottom: 24px;">
+    沉淀开业过程中的踩坑经验。每条记录都可以转化为检查项，在下次开业时自动提醒，避免重蹈覆辙。
+</p>
 
 <div class="data-table-wrapper">
     <table class="data-table" id="lessonsTable">

@@ -1,11 +1,26 @@
+<?php
+// 获取当前项目ID
+$projectId = $currentProjectId ?? null;
+?>
+
+<?php if (!$projectId): ?>
+<div class="no-project-warning">
+    请先在顶部选择一个项目，或前往 <a href="/ors/ap/?action=projects">项目中心</a> 创建/选择项目
+</div>
+<?php endif; ?>
+
 <div class="page-header">
-    <h2>任务看板</h2>
+    <h2>项目任务</h2>
     <div class="page-actions">
-        <select id="projectFilter" onchange="loadKanban()">
+        <select id="projectFilter" onchange="loadKanban()" style="display:none;">
             <option value="">全部项目</option>
         </select>
     </div>
 </div>
+
+<p class="page-description" style="color: var(--text-light); margin-bottom: 24px;">
+    当前项目的任务看板。拖动卡片或点击按钮更新任务状态。
+</p>
 
 <div class="kanban-board">
     <div class="kanban-column" data-status="todo">
@@ -75,6 +90,9 @@
 </div>
 
 <script>
+// 当前项目ID（从PHP传递）
+const kanbanProjectId = <?php echo json_encode($projectId); ?>;
+
 const blockReasons = {
     'waiting_vendor': '等待供应商',
     'waiting_approval': '等待审批',
@@ -85,31 +103,18 @@ const blockReasons = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadProjects();
-    loadKanban();
+    if (kanbanProjectId) {
+        loadKanban();
+    }
 });
 
-async function loadProjects() {
-    try {
-        const response = await fetch('/ors/api/projects.php?action=list');
-        const result = await response.json();
-        if (result.success) {
-            const select = document.getElementById('projectFilter');
-            result.data.projects.forEach(p => {
-                const option = document.createElement('option');
-                option.value = p.id;
-                option.textContent = p.project_name;
-                select.appendChild(option);
-            });
-        }
-    } catch (error) {
-        console.error('加载项目失败:', error);
-    }
-}
-
 async function loadKanban() {
-    const projectId = document.getElementById('projectFilter').value;
-    const url = '/ors/api/tasks.php?action=kanban' + (projectId ? '&project_id=' + projectId : '');
+    // 使用当前项目ID
+    const projectId = kanbanProjectId;
+    if (!projectId) {
+        return;
+    }
+    const url = '/ors/api/tasks.php?action=kanban&project_id=' + projectId;
 
     try {
         const response = await fetch(url);
