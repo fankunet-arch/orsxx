@@ -194,6 +194,78 @@ body {
     font-size: 0.875rem;
 }
 
+/* Project Selector in Header */
+.project-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+    padding-left: 16px;
+    border-left: 1px solid var(--border-color);
+}
+
+.project-selector select {
+    padding: 6px 32px 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--card-bg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+    cursor: pointer;
+    min-width: 180px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+}
+
+.project-selector select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.project-selector select:hover {
+    border-color: var(--primary-color);
+}
+
+/* Project context indicator */
+.project-context-bar {
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 8px 24px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.project-context-bar .project-name {
+    font-weight: 600;
+}
+
+.project-context-bar .project-status {
+    background: rgba(255,255,255,0.2);
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+}
+
+.no-project-warning {
+    background: var(--warning-color);
+    color: white;
+    padding: 12px 24px;
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+.no-project-warning a {
+    color: white;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
 /* Main Content */
 .main-content {
     flex: 1;

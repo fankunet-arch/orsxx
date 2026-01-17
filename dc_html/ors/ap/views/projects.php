@@ -1,9 +1,13 @@
 <div class="page-header">
-    <h2>项目列表</h2>
+    <h2>项目中心</h2>
     <div class="page-actions">
         <button class="btn btn-primary" onclick="showAddProjectModal()">+ 新建项目</button>
     </div>
 </div>
+
+<p class="page-description" style="color: var(--text-light); margin-bottom: 24px;">
+    项目执行的核心入口。创建新项目后，可以从模板一键生成任务、采购和检查清单。
+</p>
 
 <div class="data-table-wrapper">
     <table class="data-table" id="projectsTable">

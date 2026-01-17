@@ -1,9 +1,13 @@
 <div class="page-header">
-    <h2>物品库</h2>
+    <h2>物品模板</h2>
     <div class="page-actions">
         <button class="btn btn-primary" onclick="showAddItemModal()">+ 新增物品</button>
     </div>
 </div>
+
+<p class="page-description" style="color: var(--text-light); margin-bottom: 24px;">
+    管理标准化的物品清单模板。在项目采购过程中发现新物品时，可以沉淀到这里，供下次开业参考。
+</p>
 
 <div class="data-table-wrapper">
     <table class="data-table" id="itemsTable">

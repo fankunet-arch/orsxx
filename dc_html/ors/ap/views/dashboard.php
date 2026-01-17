@@ -1,5 +1,16 @@
+<?php
+// 获取当前项目ID
+$projectId = $currentProjectId ?? null;
+?>
+
+<?php if (!$projectId): ?>
+<div class="no-project-warning">
+    请先在顶部选择一个项目，或前往 <a href="/ors/ap/?action=projects">项目中心</a> 创建/选择项目
+</div>
+<?php endif; ?>
+
 <div class="page-header">
-    <h2>仪表板</h2>
+    <h2>项目仪表板</h2>
 </div>
 
 <div class="stats-grid">

@@ -86,6 +86,10 @@ switch ($action) {
         include __DIR__ . '/views/lessons.php';
         break;
 
+    case 'checklist':
+        include __DIR__ . '/views/checklist.php';
+        break;
+
     default:
         include __DIR__ . '/views/dashboard.php';
         break;
