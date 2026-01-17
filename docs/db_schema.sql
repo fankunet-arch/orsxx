@@ -33,7 +33,7 @@ DROP TABLE IF EXISTS `ors_project`;
 CREATE TABLE `ors_project` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `project_name` VARCHAR(200) NOT NULL,
-  `project_type` VARCHAR(50) DEFAULT 'cafeteria' COMMENT 'cafeteria/restaurant/retail/bubble_tea/ice_cream/dessert/fried_chicken/poke/sushi',
+  `project_type` VARCHAR(50) DEFAULT 'cafeteria' COMMENT 'cafeteria/restaurant/retail',
   `city` VARCHAR(100) DEFAULT NULL,
   `area_m2` DECIMAL(10,2) DEFAULT NULL,
   `address` TEXT DEFAULT NULL,
