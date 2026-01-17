@@ -48,6 +48,12 @@
                         <option value="cafeteria">咖啡厅</option>
                         <option value="restaurant">餐厅</option>
                         <option value="retail">零售店</option>
+                        <option value="bubble_tea">奶茶店</option>
+                        <option value="ice_cream">冰淇淋店</option>
+                        <option value="dessert">甜品店</option>
+                        <option value="fried_chicken">炸鸡店</option>
+                        <option value="poke">POKE店</option>
+                        <option value="sushi">寿司店</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -121,7 +127,13 @@ const statusNames = {
 const typeNames = {
     'cafeteria': '咖啡厅',
     'restaurant': '餐厅',
-    'retail': '零售店'
+    'retail': '零售店',
+    'bubble_tea': '奶茶店',
+    'ice_cream': '冰淇淋店',
+    'dessert': '甜品店',
+    'fried_chicken': '炸鸡店',
+    'poke': 'POKE店',
+    'sushi': '寿司店'
 };
 
 document.addEventListener('DOMContentLoaded', function() {
