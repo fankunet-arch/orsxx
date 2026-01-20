@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： mhdlmskp2kpxguj.mysql.db
--- 生成日期： 2026-01-17 13:09:13
+-- 生成日期： 2026-01-20 19:22:55
 -- 服务器版本： 8.4.6-6
 -- PHP 版本： 8.1.33
 
@@ -87,6 +87,7 @@ CREATE TABLE `ors_item` (
   `lead_time_days` int DEFAULT NULL COMMENT '采购提前期',
   `template_flag` tinyint(1) DEFAULT '0' COMMENT '是否为模板',
   `template_source` enum('global','project') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `project_types` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Comma-separated project types this template applies to. NULL means all types.',
   `created_by` int UNSIGNED DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
@@ -96,20 +97,20 @@ CREATE TABLE `ors_item` (
 -- 转存表中的数据 `ors_item`
 --
 
-INSERT INTO `ors_item` (`id`, `item_name`, `category`, `unit`, `must_buy_level`, `description`, `estimated_unit_price_eur`, `long_lead_flag`, `lead_time_days`, `template_flag`, `template_source`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, '收银机', 'it_devices', 'pcs', 'must', NULL, NULL, 1, 14, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(2, '钱箱', 'it_devices', 'pcs', 'must', NULL, NULL, 0, 7, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(3, '店用手机', 'it_devices', 'pcs', 'must', NULL, NULL, 0, 3, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(4, '香薰机', 'equipment', 'pcs', 'recommended', NULL, NULL, 0, 7, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(5, '广告灯箱', 'equipment', 'pcs', 'recommended', NULL, NULL, 1, 21, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(6, '小票打印机', 'it_devices', 'pcs', 'must', NULL, NULL, 1, 14, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(7, '音箱', 'equipment', 'pcs', 'recommended', NULL, NULL, 0, 7, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(8, '平板支架', 'it_devices', 'pcs', 'must', NULL, NULL, 0, 5, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(9, 'KDS平板', 'it_devices', 'pcs', 'must', NULL, NULL, 1, 14, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(10, '印章', 'equipment', 'pcs', 'must', NULL, NULL, 0, 7, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(11, '遮挡帘', 'furniture', 'pcs', 'recommended', NULL, NULL, 0, 14, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(12, '工作衣帽', 'consumables', 'set', 'must', NULL, NULL, 1, 21, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(13, '路由器', 'it_devices', 'pcs', 'must', NULL, NULL, 0, 3, 1, 'global', NULL, '2026-01-16 21:24:23', NULL);
+INSERT INTO `ors_item` (`id`, `item_name`, `category`, `unit`, `must_buy_level`, `description`, `estimated_unit_price_eur`, `long_lead_flag`, `lead_time_days`, `template_flag`, `template_source`, `project_types`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, '收银机', 'it_devices', 'pcs', 'must', NULL, NULL, 1, 14, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(2, '钱箱', 'it_devices', 'pcs', 'must', NULL, NULL, 0, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(3, '店用手机', 'it_devices', 'pcs', 'must', NULL, NULL, 0, 3, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(4, '香薰机', 'equipment', 'pcs', 'recommended', NULL, NULL, 0, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(5, '广告灯箱', 'equipment', 'pcs', 'recommended', NULL, NULL, 1, 21, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(6, '小票打印机', 'it_devices', 'pcs', 'must', NULL, NULL, 1, 14, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(7, '音箱', 'equipment', 'pcs', 'recommended', NULL, NULL, 0, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(8, '平板支架', 'it_devices', 'pcs', 'must', NULL, NULL, 0, 5, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(9, 'KDS平板', 'it_devices', 'pcs', 'must', NULL, NULL, 1, 14, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(10, '印章', 'equipment', 'pcs', 'must', NULL, NULL, 0, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(11, '遮挡帘', 'furniture', 'pcs', 'recommended', NULL, NULL, 0, 14, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(12, '工作衣帽', 'consumables', 'set', 'must', NULL, NULL, 1, 21, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(13, '路由器', 'it_devices', 'pcs', 'must', NULL, NULL, 0, 3, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL);
 
 -- --------------------------------------------------------
 
@@ -132,6 +133,7 @@ CREATE TABLE `ors_lesson` (
   `check_days_after_sign` int DEFAULT NULL COMMENT '签约后N天检查',
   `template_flag` tinyint(1) DEFAULT '1' COMMENT 'Lesson默认为模板',
   `template_source` enum('global','project') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `project_types` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Comma-separated project types this template applies to. NULL means all types.',
   `created_by` int UNSIGNED DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
@@ -141,10 +143,10 @@ CREATE TABLE `ors_lesson` (
 -- 转存表中的数据 `ors_lesson`
 --
 
-INSERT INTO `ors_lesson` (`id`, `project_id`, `title`, `description`, `category`, `severity`, `root_cause`, `prevention_check_item`, `check_timing`, `check_days_before_open`, `check_days_after_sign`, `template_flag`, `template_source`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, NULL, '收银链路漏项', '开业前发现POS/钱箱/打印机/网络/KDS/支架等收银链路设备未齐全或未联调', 'it', 'critical', NULL, '开业前7天必须完成POS全链路联调实测出票，包括：POS主机、钱箱、小票打印机、网络连接、KDS平板、平板支架全部到位并测试通过', '开业前7天', 7, NULL, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(2, NULL, '电力升级未前置', '装修后期发现电力不足需要增容，导致工期延误', 'power', 'high', NULL, '签约后3天内必须完成电力负载评估，确认是否需要增容', '签约后3天', NULL, 3, 1, 'global', NULL, '2026-01-16 21:24:23', NULL),
-(3, NULL, '消防合同遗漏', '开业前才发现未签订消防维护合同或未获取消防证书', 'fire_safety', 'critical', NULL, '开业前14天必须确认已获取消防验收证书和灭火器合格证', '开业前14天', 14, NULL, 1, 'global', NULL, '2026-01-16 21:24:23', NULL);
+INSERT INTO `ors_lesson` (`id`, `project_id`, `title`, `description`, `category`, `severity`, `root_cause`, `prevention_check_item`, `check_timing`, `check_days_before_open`, `check_days_after_sign`, `template_flag`, `template_source`, `project_types`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, NULL, '收银链路漏项', '开业前发现POS/钱箱/打印机/网络/KDS/支架等收银链路设备未齐全或未联调', 'it', 'critical', NULL, '开业前7天必须完成POS全链路联调实测出票，包括：POS主机、钱箱、小票打印机、网络连接、KDS平板、平板支架全部到位并测试通过', '开业前7天', 7, NULL, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(2, NULL, '电力升级未前置', '装修后期发现电力不足需要增容，导致工期延误', 'power', 'high', NULL, '签约后3天内必须完成电力负载评估，确认是否需要增容', '签约后3天', NULL, 3, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
+(3, NULL, '消防合同遗漏', '开业前才发现未签订消防维护合同或未获取消防证书', 'fire_safety', 'critical', NULL, '开业前14天必须确认已获取消防验收证书和灭火器合格证', '开业前14天', 14, NULL, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL);
 
 -- --------------------------------------------------------
 
@@ -258,6 +260,7 @@ CREATE TABLE `ors_task` (
   `lead_time_days` int DEFAULT NULL COMMENT '提前期（天）',
   `template_flag` tinyint(1) DEFAULT '0' COMMENT '是否为模板',
   `template_source` enum('global','project') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `project_types` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Comma-separated project types this template applies to. NULL means all types.',
   `source_task_id` int UNSIGNED DEFAULT NULL COMMENT '模板来源任务ID',
   `created_by` int UNSIGNED DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -268,21 +271,21 @@ CREATE TABLE `ors_task` (
 -- 转存表中的数据 `ors_task`
 --
 
-INSERT INTO `ors_task` (`id`, `project_id`, `title`, `description`, `phase_code`, `status`, `block_reason`, `block_reason_detail`, `priority`, `assigned_to`, `due_date`, `latest_start_date`, `completed_at`, `blocking_flag`, `lead_time_days`, `template_flag`, `template_source`, `source_task_id`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, NULL, '灭火器维护合同签订', '签订灭火器维护服务合同', 'permit', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 30, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', '2026-01-16 23:37:10'),
-(2, NULL, '灭火器证书获取', '获取灭火器检测合格证书', 'permit', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 14, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(3, NULL, '消防验收证书获取', '完成消防验收并获取证书', 'permit', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 21, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(4, NULL, '电力负载评估', '评估店铺电力负载需求', 'design', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 3, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(5, NULL, '电力增容报价', '获取电力增容报价', 'design', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(6, NULL, '电力增容施工排期', '确定电力增容施工时间', 'decoration', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 14, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(7, NULL, '电力增容施工', '执行电力增容施工', 'decoration', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 21, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(8, NULL, '电力增容验收', '完成电力增容验收', 'decoration', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(9, NULL, '印章制作', '制作公司印章', 'contract', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 0, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(10, NULL, '印章收货确认', '确认收到印章', 'contract', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 0, 3, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(11, NULL, 'POS系统安装', '安装POS收银系统', 'installation', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(12, NULL, 'KDS系统安装', '安装厨房显示系统', 'installation', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(13, NULL, '网络布线与调试', '完成网络布线和路由器配置', 'installation', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 5, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL),
-(14, NULL, '收银全链路联调测试', '测试POS-打印机-钱箱-KDS全链路', 'pre_opening', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, '2026-01-16 21:24:23', NULL);
+INSERT INTO `ors_task` (`id`, `project_id`, `title`, `description`, `phase_code`, `status`, `block_reason`, `block_reason_detail`, `priority`, `assigned_to`, `due_date`, `latest_start_date`, `completed_at`, `blocking_flag`, `lead_time_days`, `template_flag`, `template_source`, `project_types`, `source_task_id`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, NULL, '灭火器维护合同签订', '签订灭火器维护服务合同', 'permit', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 30, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', '2026-01-16 23:37:10'),
+(2, NULL, '灭火器证书获取', '获取灭火器检测合格证书', 'permit', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 14, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(3, NULL, '消防验收证书获取', '完成消防验收并获取证书', 'permit', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 21, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(4, NULL, '电力负载评估', '评估店铺电力负载需求', 'design', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 3, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(5, NULL, '电力增容报价', '获取电力增容报价', 'design', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(6, NULL, '电力增容施工排期', '确定电力增容施工时间', 'decoration', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 14, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(7, NULL, '电力增容施工', '执行电力增容施工', 'decoration', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 21, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(8, NULL, '电力增容验收', '完成电力增容验收', 'decoration', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(9, NULL, '印章制作', '制作公司印章', 'contract', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 0, 7, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(10, NULL, '印章收货确认', '确认收到印章', 'contract', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 0, 3, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(11, NULL, 'POS系统安装', '安装POS收银系统', 'installation', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(12, NULL, 'KDS系统安装', '安装厨房显示系统', 'installation', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(13, NULL, '网络布线与调试', '完成网络布线和路由器配置', 'installation', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 5, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL),
+(14, NULL, '收银全链路联调测试', '测试POS-打印机-钱箱-KDS全链路', 'pre_opening', 'todo', NULL, NULL, 'medium', NULL, NULL, NULL, NULL, 1, 7, 1, 'global', NULL, NULL, NULL, '2026-01-16 21:24:23', NULL);
 
 -- --------------------------------------------------------
 
@@ -395,7 +398,8 @@ ALTER TABLE `ors_item`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_category` (`category`),
   ADD KEY `idx_template_flag` (`template_flag`),
-  ADD KEY `idx_item_name` (`item_name`);
+  ADD KEY `idx_item_name` (`item_name`),
+  ADD KEY `idx_project_types` (`project_types`(100));
 
 --
 -- 表的索引 `ors_lesson`
@@ -404,7 +408,8 @@ ALTER TABLE `ors_lesson`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_project_id` (`project_id`),
   ADD KEY `idx_category` (`category`),
-  ADD KEY `idx_template_flag` (`template_flag`);
+  ADD KEY `idx_template_flag` (`template_flag`),
+  ADD KEY `idx_project_types` (`project_types`(100));
 
 --
 -- 表的索引 `ors_phase`
@@ -443,7 +448,8 @@ ALTER TABLE `ors_task`
   ADD KEY `idx_status` (`status`),
   ADD KEY `idx_phase_code` (`phase_code`),
   ADD KEY `idx_template_flag` (`template_flag`),
-  ADD KEY `idx_created_at` (`created_at`);
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_project_types` (`project_types`(100));
 
 --
 -- 表的索引 `ors_task_dependency`
