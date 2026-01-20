@@ -11,6 +11,7 @@ use ORS\Response;
 use ORS\Validator;
 use ORS\Purchase;
 use ORS\Item;
+use ORS\Vendor;
 use ORS\TemplateTag;
 use ORS\Database;
 use ORS\FxRate;
@@ -24,6 +25,10 @@ $action = $_GET['action'] ?? 'list';
 switch ($action) {
     case 'list':
         handleList();
+        break;
+
+    case 'get':
+        handleGet();
         break;
 
     case 'today':
@@ -67,6 +72,35 @@ function handleList(): void
     $projectId = $_GET['project_id'] ?? null;
     $purchases = Purchase::getByProject($projectId ? (int)$projectId : null);
     Response::success(['purchases' => $purchases]);
+}
+
+function handleGet(): void
+{
+    $id = (int)($_GET['id'] ?? 0);
+
+    if (!$id) {
+        Response::error('Purchase ID is required');
+    }
+
+    $purchase = Purchase::find($id);
+
+    if (!$purchase) {
+        Response::notFound('Purchase not found');
+    }
+
+    // Get linked item name if exists
+    if ($purchase['item_id']) {
+        $item = Item::find($purchase['item_id']);
+        $purchase['linked_item_name'] = $item ? $item['item_name'] : null;
+    }
+
+    // Get vendor name if exists
+    if ($purchase['vendor_id']) {
+        $vendor = Vendor::find($purchase['vendor_id']);
+        $purchase['vendor_name'] = $vendor ? $vendor['vendor_name'] : null;
+    }
+
+    Response::success(['purchase' => $purchase]);
 }
 
 function handleToday(): void

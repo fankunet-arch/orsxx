@@ -161,8 +161,13 @@ class Task extends Model
      */
     public static function getByProject(?int $projectId, bool $todayOnly = false): array
     {
-        $sql = 'SELECT * FROM ors_task WHERE project_id ' . ($projectId ? '= ?' : 'IS NULL OR project_id = ?');
-        $params = [$projectId ?? 0];
+        if ($projectId) {
+            $sql = 'SELECT * FROM ors_task WHERE project_id = ?';
+            $params = [$projectId];
+        } else {
+            $sql = 'SELECT * FROM ors_task WHERE 1=1';
+            $params = [];
+        }
 
         if ($todayOnly) {
             $sql .= ' AND DATE(created_at) = CURDATE()';
@@ -187,10 +192,19 @@ class Task extends Model
     }
 
     /**
-     * Get template tasks
+     * Get template tasks, optionally filtered by project type
      */
-    public static function getTemplates(): array
+    public static function getTemplates(?string $projectType = null): array
     {
+        if ($projectType) {
+            // Filter by project type: match NULL (all types) or containing the specific type
+            return Database::fetchAll(
+                'SELECT * FROM ors_task WHERE template_flag = 1
+                 AND (project_types IS NULL OR project_types = "" OR FIND_IN_SET(?, project_types) > 0)
+                 ORDER BY phase_code, title',
+                [$projectType]
+            );
+        }
         return Database::fetchAll(
             'SELECT * FROM ors_task WHERE template_flag = 1 ORDER BY phase_code, title'
         );
@@ -202,10 +216,18 @@ class Item extends Model
     protected static string $table = 'ors_item';
 
     /**
-     * Get template items
+     * Get template items, optionally filtered by project type
      */
-    public static function getTemplates(): array
+    public static function getTemplates(?string $projectType = null): array
     {
+        if ($projectType) {
+            return Database::fetchAll(
+                'SELECT * FROM ors_item WHERE template_flag = 1
+                 AND (project_types IS NULL OR project_types = "" OR FIND_IN_SET(?, project_types) > 0)
+                 ORDER BY category, item_name',
+                [$projectType]
+            );
+        }
         return Database::fetchAll(
             'SELECT * FROM ors_item WHERE template_flag = 1 ORDER BY category, item_name'
         );
@@ -235,9 +257,15 @@ class Purchase extends Model
         $sql = 'SELECT p.*, i.item_name as linked_item_name, v.vendor_name
                 FROM ors_purchase p
                 LEFT JOIN ors_item i ON p.item_id = i.id
-                LEFT JOIN ors_vendor v ON p.vendor_id = v.id
-                WHERE p.project_id ' . ($projectId ? '= ?' : 'IS NULL OR p.project_id = ?');
-        $params = [$projectId ?? 0];
+                LEFT JOIN ors_vendor v ON p.vendor_id = v.id';
+
+        if ($projectId) {
+            $sql .= ' WHERE p.project_id = ?';
+            $params = [$projectId];
+        } else {
+            $sql .= ' WHERE 1=1';
+            $params = [];
+        }
 
         if ($todayOnly) {
             $sql .= ' AND DATE(p.created_at) = CURDATE()';
@@ -286,10 +314,18 @@ class Lesson extends Model
     protected static string $table = 'ors_lesson';
 
     /**
-     * Get template lessons
+     * Get template lessons, optionally filtered by project type
      */
-    public static function getTemplates(): array
+    public static function getTemplates(?string $projectType = null): array
     {
+        if ($projectType) {
+            return Database::fetchAll(
+                'SELECT * FROM ors_lesson WHERE template_flag = 1
+                 AND (project_types IS NULL OR project_types = "" OR FIND_IN_SET(?, project_types) > 0)
+                 ORDER BY category, title',
+                [$projectType]
+            );
+        }
         return Database::fetchAll(
             'SELECT * FROM ors_lesson WHERE template_flag = 1 ORDER BY category, title'
         );

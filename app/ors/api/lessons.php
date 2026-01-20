@@ -25,6 +25,10 @@ switch ($action) {
         handleList();
         break;
 
+    case 'get':
+        handleGet();
+        break;
+
     case 'templates':
         handleTemplates();
         break;
@@ -70,6 +74,27 @@ function handleList(): void
     Response::success(['lessons' => $lessons]);
 }
 
+function handleGet(): void
+{
+    $id = (int)($_GET['id'] ?? 0);
+
+    if (!$id) {
+        Response::error('Lesson ID is required');
+    }
+
+    $lesson = Lesson::find($id);
+
+    if (!$lesson) {
+        Response::notFound('Lesson not found');
+    }
+
+    // Get tags for lesson
+    $tagRecords = TemplateTag::getForEntity('lesson', $id);
+    $lesson['tags'] = array_column($tagRecords, 'tag_name');
+
+    Response::success(['lesson' => $lesson]);
+}
+
 function handleTemplates(): void
 {
     $lessons = Lesson::getTemplates();
@@ -111,6 +136,7 @@ function handleCreate(): void
         'check_days_after_sign' => $validator->getInt('check_days_after_sign'),
         'template_flag' => $validator->getBool('template_flag', true) ? 1 : 0,
         'template_source' => $validator->getOrNull('template_source'),
+        'project_types' => $validator->getOrNull('project_types'),
         'created_by' => $user['id']
     ];
 
@@ -164,6 +190,7 @@ function handleUpdate(): void
     if (isset($input['check_days_after_sign'])) $data['check_days_after_sign'] = $validator->getInt('check_days_after_sign');
     if (isset($input['template_flag'])) $data['template_flag'] = $validator->getBool('template_flag') ? 1 : 0;
     if (isset($input['template_source'])) $data['template_source'] = $validator->getOrNull('template_source');
+    if (array_key_exists('project_types', $input)) $data['project_types'] = $validator->getOrNull('project_types');
 
     if (!empty($data)) {
         Lesson::updateById($id, $data);

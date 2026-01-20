@@ -95,6 +95,20 @@
                     <input type="text" id="editTags" placeholder="例如：must_buy, it">
                 </div>
             </div>
+            <div class="form-group">
+                <label>适用店铺类型（留空表示全部适用）</label>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="cafeteria"> 咖啡厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="restaurant"> 餐厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="retail"> 零售店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="bubble_tea"> 奶茶店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="ice_cream"> 冰淇淋店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="dessert"> 甜品店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="fried_chicken"> 炸鸡店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="poke"> POKE店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="sushi"> 寿司店</label>
+                </div>
+            </div>
             <div class="form-group" id="blockReasonGroup" style="display:none;">
                 <label>阻塞原因</label>
                 <select id="editBlockReason">
@@ -141,6 +155,28 @@
             <div class="form-group">
                 <label>模板标签（逗号分隔）</label>
                 <input type="text" id="bulkTags" placeholder="例如：must_buy, it">
+            </div>
+            <div class="form-group">
+                <label>适用店铺类型</label>
+                <select id="bulkProjectTypesAction">
+                    <option value="">-- 不修改 --</option>
+                    <option value="all">设为全部适用（清空选择）</option>
+                    <option value="set">设为指定类型</option>
+                </select>
+            </div>
+            <div class="form-group" id="bulkProjectTypesGroup" style="display:none;">
+                <label>选择适用的店铺类型</label>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="cafeteria"> 咖啡厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="restaurant"> 餐厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="retail"> 零售店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="bubble_tea"> 奶茶店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="ice_cream"> 冰淇淋店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="dessert"> 甜品店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="fried_chicken"> 炸鸡店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="poke"> POKE店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="sushi"> 寿司店</label>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -262,8 +298,23 @@ function showBulkActions() {
         return;
     }
     document.getElementById('bulkCount').textContent = '已选择 ' + ids.length + ' 个任务';
+    // 重置项目类型选择
+    document.getElementById('bulkProjectTypesAction').value = '';
+    document.getElementById('bulkProjectTypesGroup').style.display = 'none';
+    document.querySelectorAll('input[name="bulkProjectTypes"]').forEach(cb => cb.checked = false);
     document.getElementById('bulkModal').style.display = 'flex';
 }
+
+// 监听项目类型操作选择变化
+document.addEventListener('DOMContentLoaded', function() {
+    const actionSelect = document.getElementById('bulkProjectTypesAction');
+    if (actionSelect) {
+        actionSelect.addEventListener('change', function() {
+            const group = document.getElementById('bulkProjectTypesGroup');
+            group.style.display = this.value === 'set' ? 'block' : 'none';
+        });
+    }
+});
 
 function closeBulkModal() {
     document.getElementById('bulkModal').style.display = 'none';
@@ -274,11 +325,21 @@ async function executeBulkUpdate() {
     const phase = document.getElementById('bulkPhase').value;
     const template = document.getElementById('bulkTemplate').value;
     const tags = document.getElementById('bulkTags').value;
+    const projectTypesAction = document.getElementById('bulkProjectTypesAction').value;
 
     const data = { ids };
     if (phase) data.phase_code = phase;
     if (template !== '') data.template_flag = template === '1';
     if (tags) data.template_tags = tags;
+
+    // 处理项目类型
+    if (projectTypesAction === 'all') {
+        data.project_types = null; // 设为全部适用
+    } else if (projectTypesAction === 'set') {
+        const selectedTypes = Array.from(document.querySelectorAll('input[name="bulkProjectTypes"]:checked'))
+            .map(cb => cb.value);
+        data.project_types = selectedTypes.length > 0 ? selectedTypes.join(',') : null;
+    }
 
     try {
         const response = await fetch('/ors/api/tasks.php?action=bulkUpdate', {
@@ -330,6 +391,12 @@ async function editTask(id) {
             // 填充阶段下拉框
             populateEditPhases();
             document.getElementById('editPhase').value = task.phase_code || '';
+
+            // 设置项目类型选择
+            const projectTypes = task.project_types ? task.project_types.split(',') : [];
+            document.querySelectorAll('input[name="taskProjectTypes"]').forEach(cb => {
+                cb.checked = projectTypes.includes(cb.value);
+            });
 
             document.getElementById('editModal').style.display = 'flex';
         } else {
@@ -391,6 +458,10 @@ async function saveTask() {
         return;
     }
 
+    // 获取选中的项目类型
+    const selectedTypes = Array.from(document.querySelectorAll('input[name="taskProjectTypes"]:checked'))
+        .map(cb => cb.value);
+
     const data = {
         id: parseInt(id),
         title: title,
@@ -401,6 +472,7 @@ async function saveTask() {
         priority: document.getElementById('editPriority').value,
         template_flag: document.getElementById('editTemplate').checked,
         template_tags: document.getElementById('editTags').value.trim(),
+        project_types: selectedTypes.length > 0 ? selectedTypes.join(',') : null,
         block_reason: document.getElementById('editStatus').value === 'blocked'
             ? document.getElementById('editBlockReason').value
             : null

@@ -215,6 +215,7 @@ function handleGenerateFromTemplate(): void
     }
 
     $targetOpenDate = $project['target_open_date'] ? new \DateTime($project['target_open_date']) : null;
+    $projectType = $project['project_type'] ?? null;
 
     $createdTasks = 0;
     $createdPurchases = 0;
@@ -223,8 +224,8 @@ function handleGenerateFromTemplate(): void
     Database::beginTransaction();
 
     try {
-        // 1. Generate tasks from templates
-        $templateTasks = Task::getTemplates();
+        // 1. Generate tasks from templates (filtered by project type)
+        $templateTasks = Task::getTemplates($projectType);
         foreach ($templateTasks as $template) {
             $latestStartDate = null;
             if ($targetOpenDate && $template['lead_time_days']) {
@@ -250,8 +251,8 @@ function handleGenerateFromTemplate(): void
             $createdTasks++;
         }
 
-        // 2. Generate purchases from template items
-        $templateItems = Item::getTemplates();
+        // 2. Generate purchases from template items (filtered by project type)
+        $templateItems = Item::getTemplates($projectType);
         foreach ($templateItems as $item) {
             $latestOrderDate = null;
             if ($targetOpenDate && $item['lead_time_days']) {
@@ -277,8 +278,8 @@ function handleGenerateFromTemplate(): void
             $createdPurchases++;
         }
 
-        // 3. Generate check items from template lessons
-        $templateLessons = Lesson::getTemplates();
+        // 3. Generate check items from template lessons (filtered by project type)
+        $templateLessons = Lesson::getTemplates($projectType);
         foreach ($templateLessons as $lesson) {
             $checkDate = null;
             if ($targetOpenDate) {

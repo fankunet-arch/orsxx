@@ -227,8 +227,33 @@ async function saveProject() {
     }
 }
 
-function editProject(id) {
-    showToast('编辑功能 - 待实现', 'info');
+async function editProject(id) {
+    try {
+        const response = await fetch('/ors/api/projects.php?action=get&id=' + id);
+        const result = await response.json();
+
+        if (result.success && result.data.project) {
+            const project = result.data.project;
+
+            // 填充编辑表单
+            document.getElementById('projectModalTitle').textContent = '编辑项目';
+            document.getElementById('projectId').value = project.id;
+            document.getElementById('projectName').value = project.project_name || '';
+            document.getElementById('projectType').value = project.project_type || 'cafeteria';
+            document.getElementById('projectCity').value = project.city || '';
+            document.getElementById('projectArea').value = project.area_m2 || '';
+            document.getElementById('projectOpenDate').value = project.target_open_date || '';
+            document.getElementById('projectAddress').value = project.address || '';
+            document.getElementById('projectStatus').value = project.status || 'planning';
+
+            document.getElementById('projectModal').style.display = 'flex';
+        } else {
+            showToast('加载项目失败', 'error');
+        }
+    } catch (error) {
+        console.error('加载项目失败:', error);
+        showToast('网络错误', 'error');
+    }
 }
 
 function showGenerateModal(projectId) {
