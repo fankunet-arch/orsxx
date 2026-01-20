@@ -49,6 +49,69 @@ $projectId = $currentProjectId ?? null;
     </table>
 </div>
 
+<!-- 编辑采购弹窗 -->
+<div id="purchaseModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="purchaseModalTitle">编辑采购</h3>
+            <button class="modal-close" onclick="closePurchaseModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="purchaseId">
+            <div class="form-group">
+                <label>物品名称</label>
+                <input type="text" id="purchaseItemName" readonly style="background: #f5f5f5;">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>数量</label>
+                    <input type="number" id="purchaseQuantity" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>单位</label>
+                    <input type="text" id="purchaseUnit">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>单价</label>
+                    <input type="number" id="purchaseUnitPrice" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>币种</label>
+                    <select id="purchaseCurrency">
+                        <option value="EUR">EUR</option>
+                        <option value="CNY">CNY</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>汇率（到EUR）</label>
+                <input type="number" id="purchaseFxRate" min="0" step="0.000001" placeholder="如币种为EUR则留空">
+            </div>
+            <div class="form-group">
+                <label>状态</label>
+                <select id="purchaseStatus">
+                    <option value="planned">计划中</option>
+                    <option value="ordered">已下单</option>
+                    <option value="shipped">已发货</option>
+                    <option value="received">已收货</option>
+                    <option value="cancelled">已取消</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>备注</label>
+                <textarea id="purchaseNotes" rows="2"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closePurchaseModal()">取消</button>
+            <button class="btn btn-primary" onclick="savePurchase()">保存</button>
+        </div>
+    </div>
+</div>
+
 <!-- 归一化弹窗 -->
 <div id="normalizeModal" class="modal" style="display:none;">
     <div class="modal-content">
@@ -215,8 +278,72 @@ async function executeNormalize() {
     }
 }
 
-function editPurchase(id) {
-    showToast('编辑功能 - 待实现', 'info');
+async function editPurchase(id) {
+    try {
+        const response = await fetch('/ors/api/purchases.php?action=get&id=' + id);
+        const result = await response.json();
+
+        if (result.success && result.data.purchase) {
+            const purchase = result.data.purchase;
+
+            // 填充编辑表单
+            document.getElementById('purchaseModalTitle').textContent = '编辑采购';
+            document.getElementById('purchaseId').value = purchase.id;
+            document.getElementById('purchaseItemName').value = purchase.linked_item_name || purchase.free_text_item || '';
+            document.getElementById('purchaseQuantity').value = purchase.quantity || 1;
+            document.getElementById('purchaseUnit').value = purchase.unit || 'pcs';
+            document.getElementById('purchaseUnitPrice').value = purchase.unit_price || '';
+            document.getElementById('purchaseCurrency').value = purchase.currency || 'EUR';
+            document.getElementById('purchaseFxRate').value = purchase.fx_rate_to_eur || '';
+            document.getElementById('purchaseStatus').value = purchase.status || 'planned';
+            document.getElementById('purchaseNotes').value = purchase.notes || '';
+
+            document.getElementById('purchaseModal').style.display = 'flex';
+        } else {
+            showToast('加载采购记录失败', 'error');
+        }
+    } catch (error) {
+        console.error('加载采购记录失败:', error);
+        showToast('网络错误', 'error');
+    }
+}
+
+function closePurchaseModal() {
+    document.getElementById('purchaseModal').style.display = 'none';
+}
+
+async function savePurchase() {
+    const id = document.getElementById('purchaseId').value;
+    const data = {
+        id: parseInt(id),
+        quantity: document.getElementById('purchaseQuantity').value || 1,
+        unit: document.getElementById('purchaseUnit').value || 'pcs',
+        unit_price: document.getElementById('purchaseUnitPrice').value || 0,
+        currency: document.getElementById('purchaseCurrency').value || 'EUR',
+        fx_rate_to_eur: document.getElementById('purchaseFxRate').value || null,
+        status: document.getElementById('purchaseStatus').value || 'planned',
+        notes: document.getElementById('purchaseNotes').value || null
+    };
+
+    try {
+        const response = await fetch('/ors/api/purchases.php?action=update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast('采购记录已更新', 'success');
+            closePurchaseModal();
+            loadPurchases();
+        } else {
+            showToast(result.message || '保存失败', 'error');
+        }
+    } catch (error) {
+        console.error('保存失败:', error);
+        showToast('网络错误', 'error');
+    }
 }
 
 function formatNumber(num) {

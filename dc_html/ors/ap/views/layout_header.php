@@ -125,13 +125,16 @@ if (isset($_GET['project_id'])) {
                         const select = document.getElementById('currentProjectSelect');
                         if (!select) return;
 
-                        // 只显示进行中的项目
-                        const activeProjects = (result.data || []).filter(p => p.status === 'active' || p.status === 'planning');
+                        // 只显示进行中的项目 - 注意API返回的是 result.data.projects
+                        const projects = result.data?.projects || result.data || [];
+                        const activeProjects = projects.filter(p => p.status === 'active' || p.status === 'planning');
 
                         select.innerHTML = '<option value="">-- 选择项目 --</option>';
                         activeProjects.forEach(project => {
                             const selected = currentProjectId == project.id ? 'selected' : '';
-                            select.innerHTML += `<option value="${project.id}" ${selected}>${escapeHtml(project.name)}</option>`;
+                            // 数据库字段是 project_name，不是 name
+                            const projectName = project.project_name || project.name || '未命名项目';
+                            select.innerHTML += `<option value="${project.id}" ${selected}>${escapeHtml(projectName)}</option>`;
                         });
                     } catch (error) {
                         console.error('加载项目列表失败:', error);

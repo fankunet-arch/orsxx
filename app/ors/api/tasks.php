@@ -133,6 +133,7 @@ function handleCreate(): void
         'lead_time_days' => $validator->getInt('lead_time_days'),
         'template_flag' => $validator->getBool('template_flag') ? 1 : 0,
         'template_source' => $validator->getOrNull('template_source'),
+        'project_types' => $validator->getOrNull('project_types'),
         'created_by' => $user['id']
     ];
 
@@ -182,6 +183,7 @@ function handleUpdate(): void
     if (isset($input['lead_time_days'])) $data['lead_time_days'] = $validator->getInt('lead_time_days');
     if (isset($input['template_flag'])) $data['template_flag'] = $validator->getBool('template_flag') ? 1 : 0;
     if (isset($input['template_source'])) $data['template_source'] = $validator->getOrNull('template_source');
+    if (array_key_exists('project_types', $input)) $data['project_types'] = $validator->getOrNull('project_types');
     if (isset($input['block_reason'])) $data['block_reason'] = $validator->getOrNull('block_reason');
     if (isset($input['block_reason_detail'])) $data['block_reason_detail'] = $validator->getOrNull('block_reason_detail');
 
@@ -309,6 +311,7 @@ function handleBulkUpdate(): void
     if (isset($input['phase_code'])) $data['phase_code'] = $input['phase_code'] ?: null;
     if (isset($input['template_flag'])) $data['template_flag'] = filter_var($input['template_flag'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
     if (isset($input['template_source'])) $data['template_source'] = $input['template_source'] ?: null;
+    if (array_key_exists('project_types', $input)) $data['project_types'] = $input['project_types'] ?: null;
     if (isset($input['status'])) $data['status'] = $input['status'];
     if (isset($input['priority'])) $data['priority'] = $input['priority'];
 

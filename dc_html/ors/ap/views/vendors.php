@@ -198,7 +198,33 @@ async function saveVendor() {
     }
 }
 
-function editVendor(id) {
-    showToast('编辑功能 - 待实现', 'info');
+async function editVendor(id) {
+    try {
+        const response = await fetch('/ors/api/vendors.php?action=get&id=' + id);
+        const result = await response.json();
+
+        if (result.success && result.data.vendor) {
+            const vendor = result.data.vendor;
+
+            // 填充编辑表单
+            document.getElementById('vendorModalTitle').textContent = '编辑供应商';
+            document.getElementById('vendorId').value = vendor.id;
+            document.getElementById('vendorName').value = vendor.vendor_name || '';
+            document.getElementById('vendorCategory').value = vendor.category || '';
+            document.getElementById('vendorContact').value = vendor.contact_person || '';
+            document.getElementById('vendorPhone').value = vendor.phone || '';
+            document.getElementById('vendorEmail').value = vendor.email || '';
+            document.getElementById('vendorAddress').value = vendor.address || '';
+            document.getElementById('vendorRating').value = vendor.rating || '';
+            document.getElementById('vendorRatingComment').value = vendor.rating_comment || '';
+
+            document.getElementById('vendorModal').style.display = 'flex';
+        } else {
+            showToast('加载供应商失败', 'error');
+        }
+    } catch (error) {
+        console.error('加载供应商失败:', error);
+        showToast('网络错误', 'error');
+    }
 }
 </script>

@@ -24,6 +24,10 @@ switch ($action) {
         handleList();
         break;
 
+    case 'get':
+        handleGet();
+        break;
+
     case 'templates':
         handleTemplates();
         break;
@@ -43,6 +47,11 @@ switch ($action) {
         handleDelete();
         break;
 
+    case 'bulkUpdate':
+        if ($method !== 'POST') Response::error('Method not allowed', 405);
+        handleBulkUpdate();
+        break;
+
     case 'search':
         handleSearch();
         break;
@@ -59,6 +68,27 @@ function handleList(): void
 {
     $items = Item::all('category, item_name');
     Response::success(['items' => $items]);
+}
+
+function handleGet(): void
+{
+    $id = (int)($_GET['id'] ?? 0);
+
+    if (!$id) {
+        Response::error('Item ID is required');
+    }
+
+    $item = Item::find($id);
+
+    if (!$item) {
+        Response::notFound('Item not found');
+    }
+
+    // Get tags for item
+    $tagRecords = TemplateTag::getForEntity('item', $id);
+    $item['tags'] = array_column($tagRecords, 'tag_name');
+
+    Response::success(['item' => $item]);
 }
 
 function handleTemplates(): void
@@ -101,6 +131,7 @@ function handleCreate(): void
         'lead_time_days' => $validator->getInt('lead_time_days'),
         'template_flag' => $validator->getBool('template_flag') ? 1 : 0,
         'template_source' => $validator->getOrNull('template_source'),
+        'project_types' => $validator->getOrNull('project_types'),
         'created_by' => $user['id']
     ];
 
@@ -149,6 +180,7 @@ function handleUpdate(): void
     if (isset($input['lead_time_days'])) $data['lead_time_days'] = $validator->getInt('lead_time_days');
     if (isset($input['template_flag'])) $data['template_flag'] = $validator->getBool('template_flag') ? 1 : 0;
     if (isset($input['template_source'])) $data['template_source'] = $validator->getOrNull('template_source');
+    if (array_key_exists('project_types', $input)) $data['project_types'] = $validator->getOrNull('project_types');
 
     if (!empty($data)) {
         Item::updateById($id, $data);
@@ -223,4 +255,49 @@ function handleCategories(): void
     ];
 
     Response::success(['categories' => $categories]);
+}
+
+function handleBulkUpdate(): void
+{
+    Auth::requireAdmin();
+
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+
+    $ids = $input['ids'] ?? [];
+
+    if (empty($ids) || !is_array($ids)) {
+        Response::error('Item IDs are required');
+    }
+
+    $updated = 0;
+    $failed = 0;
+    $errors = [];
+
+    $data = [];
+    if (isset($input['template_flag'])) $data['template_flag'] = filter_var($input['template_flag'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+    if (array_key_exists('project_types', $input)) $data['project_types'] = $input['project_types'] ?: null;
+
+    foreach ($ids as $id) {
+        try {
+            if (!Item::find($id)) {
+                $failed++;
+                $errors[] = "Item #{$id} not found";
+                continue;
+            }
+
+            if (!empty($data)) {
+                Item::updateById($id, $data);
+            }
+            $updated++;
+        } catch (\Exception $e) {
+            $failed++;
+            $errors[] = "Item #{$id}: " . $e->getMessage();
+        }
+    }
+
+    Response::success([
+        'updated' => $updated,
+        'failed' => $failed,
+        'errors' => $errors
+    ], "Updated {$updated} item(s)");
 }

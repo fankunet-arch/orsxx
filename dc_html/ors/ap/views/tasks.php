@@ -17,12 +17,12 @@
         <thead>
             <tr>
                 <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                <th>标题</th>
-                <th>状态</th>
-                <th>阶段</th>
-                <th>优先级</th>
-                <th>模板</th>
-                <th>创建时间</th>
+                <th class="sortable" data-sort-key="title">标题</th>
+                <th class="sortable" data-sort-key="status">状态</th>
+                <th class="sortable" data-sort-key="phase_code">阶段</th>
+                <th class="sortable" data-sort-key="priority">优先级</th>
+                <th class="sortable" data-sort-key="template_flag">模板</th>
+                <th class="sortable" data-sort-key="created_at">创建时间</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -95,6 +95,20 @@
                     <input type="text" id="editTags" placeholder="例如：must_buy, it">
                 </div>
             </div>
+            <div class="form-group">
+                <label>适用店铺类型（留空表示全部适用）</label>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="cafeteria"> 咖啡厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="restaurant"> 餐厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="retail"> 零售店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="bubble_tea"> 奶茶店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="ice_cream"> 冰淇淋店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="dessert"> 甜品店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="fried_chicken"> 炸鸡店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="poke"> POKE店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="taskProjectTypes" value="sushi"> 寿司店</label>
+                </div>
+            </div>
             <div class="form-group" id="blockReasonGroup" style="display:none;">
                 <label>阻塞原因</label>
                 <select id="editBlockReason">
@@ -141,6 +155,28 @@
             <div class="form-group">
                 <label>模板标签（逗号分隔）</label>
                 <input type="text" id="bulkTags" placeholder="例如：must_buy, it">
+            </div>
+            <div class="form-group">
+                <label>适用店铺类型</label>
+                <select id="bulkProjectTypesAction">
+                    <option value="">-- 不修改 --</option>
+                    <option value="all">设为全部适用（清空选择）</option>
+                    <option value="set">设为指定类型</option>
+                </select>
+            </div>
+            <div class="form-group" id="bulkProjectTypesGroup" style="display:none;">
+                <label>选择适用的店铺类型</label>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="cafeteria"> 咖啡厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="restaurant"> 餐厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="retail"> 零售店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="bubble_tea"> 奶茶店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="ice_cream"> 冰淇淋店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="dessert"> 甜品店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="fried_chicken"> 炸鸡店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="poke"> POKE店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="bulkProjectTypes" value="sushi"> 寿司店</label>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -210,6 +246,11 @@ async function loadPhases() {
     }
 }
 
+// 存储当前任务数据用于排序
+let currentTasks = [];
+let currentSortKey = null;
+let currentSortDir = 'asc';
+
 async function loadTasks() {
     const projectId = document.getElementById('projectFilter').value;
     const url = '/ors/api/tasks.php?action=list' + (projectId ? '&project_id=' + projectId : '');
@@ -221,30 +262,108 @@ async function loadTasks() {
         const result = await response.json();
 
         if (result.success && result.data.tasks.length > 0) {
-            tbody.innerHTML = result.data.tasks.map(task => {
-                const phase = phases.find(p => p.phase_code === task.phase_code);
-                return `
-                <tr>
-                    <td><input type="checkbox" class="task-checkbox" value="${task.id}"></td>
-                    <td>${escapeHtml(task.title)}</td>
-                    <td><span class="status-badge status-${task.status}">${statusNames[task.status] || task.status}</span></td>
-                    <td>${phase ? escapeHtml(phase.phase_name) : '-'}</td>
-                    <td>${priorityNames[task.priority] || '-'}</td>
-                    <td>${task.template_flag ? '<span class="badge badge-success">是</span>' : '-'}</td>
-                    <td>${formatDate(task.created_at)}</td>
-                    <td>
-                        <button class="btn btn-xs" onclick="editTask(${task.id})">编辑</button>
-                    </td>
-                </tr>
-                `;
-            }).join('');
+            currentTasks = result.data.tasks;
+            renderTasks();
         } else {
+            currentTasks = [];
             tbody.innerHTML = '<tr><td colspan="8" class="empty-state">暂无任务</td></tr>';
         }
     } catch (error) {
         tbody.innerHTML = '<tr><td colspan="8" class="error-state">加载失败</td></tr>';
     }
 }
+
+function renderTasks() {
+    const tbody = document.getElementById('tasksBody');
+    tbody.innerHTML = currentTasks.map(task => {
+        const phase = phases.find(p => p.phase_code === task.phase_code);
+        return `
+        <tr>
+            <td><input type="checkbox" class="task-checkbox" value="${task.id}"></td>
+            <td>${escapeHtml(task.title)}</td>
+            <td><span class="status-badge status-${task.status}">${statusNames[task.status] || task.status}</span></td>
+            <td>${phase ? escapeHtml(phase.phase_name) : '-'}</td>
+            <td>${priorityNames[task.priority] || '-'}</td>
+            <td>${task.template_flag ? '<span class="badge badge-success">是</span>' : '-'}</td>
+            <td>${formatDate(task.created_at)}</td>
+            <td>
+                <button class="btn btn-xs" onclick="editTask(${task.id})">编辑</button>
+            </td>
+        </tr>
+        `;
+    }).join('');
+}
+
+// 排序优先级映射
+const priorityOrder = { 'urgent': 0, 'high': 1, 'medium': 2, 'low': 3 };
+const statusOrder = { 'blocked': 0, 'doing': 1, 'todo': 2, 'done': 3 };
+
+function sortTasks(key) {
+    // 切换排序方向
+    if (currentSortKey === key) {
+        currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortKey = key;
+        currentSortDir = 'asc';
+    }
+
+    // 更新表头样式
+    document.querySelectorAll('#tasksTable th.sortable').forEach(th => {
+        th.classList.remove('asc', 'desc');
+        if (th.dataset.sortKey === key) {
+            th.classList.add(currentSortDir);
+        }
+    });
+
+    // 排序数据
+    currentTasks.sort((a, b) => {
+        let valA = a[key];
+        let valB = b[key];
+
+        // 特殊排序规则
+        if (key === 'priority') {
+            valA = priorityOrder[valA] ?? 99;
+            valB = priorityOrder[valB] ?? 99;
+        } else if (key === 'status') {
+            valA = statusOrder[valA] ?? 99;
+            valB = statusOrder[valB] ?? 99;
+        } else if (key === 'phase_code') {
+            // 根据阶段顺序排序
+            const phaseA = phases.find(p => p.phase_code === valA);
+            const phaseB = phases.find(p => p.phase_code === valB);
+            valA = phaseA ? phaseA.sort_order : 999;
+            valB = phaseB ? phaseB.sort_order : 999;
+        } else if (key === 'template_flag') {
+            valA = valA ? 1 : 0;
+            valB = valB ? 1 : 0;
+        }
+
+        // null 值处理
+        if (valA === null || valA === undefined) valA = '';
+        if (valB === null || valB === undefined) valB = '';
+
+        // 字符串比较
+        if (typeof valA === 'string') {
+            valA = valA.toLowerCase();
+            valB = valB.toLowerCase();
+        }
+
+        let result = 0;
+        if (valA < valB) result = -1;
+        if (valA > valB) result = 1;
+
+        return currentSortDir === 'asc' ? result : -result;
+    });
+
+    renderTasks();
+}
+
+// 初始化排序点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('#tasksTable th.sortable').forEach(th => {
+        th.addEventListener('click', () => sortTasks(th.dataset.sortKey));
+    });
+});
 
 function toggleSelectAll() {
     const checked = document.getElementById('selectAll').checked;
@@ -262,8 +381,23 @@ function showBulkActions() {
         return;
     }
     document.getElementById('bulkCount').textContent = '已选择 ' + ids.length + ' 个任务';
+    // 重置项目类型选择
+    document.getElementById('bulkProjectTypesAction').value = '';
+    document.getElementById('bulkProjectTypesGroup').style.display = 'none';
+    document.querySelectorAll('input[name="bulkProjectTypes"]').forEach(cb => cb.checked = false);
     document.getElementById('bulkModal').style.display = 'flex';
 }
+
+// 监听项目类型操作选择变化
+document.addEventListener('DOMContentLoaded', function() {
+    const actionSelect = document.getElementById('bulkProjectTypesAction');
+    if (actionSelect) {
+        actionSelect.addEventListener('change', function() {
+            const group = document.getElementById('bulkProjectTypesGroup');
+            group.style.display = this.value === 'set' ? 'block' : 'none';
+        });
+    }
+});
 
 function closeBulkModal() {
     document.getElementById('bulkModal').style.display = 'none';
@@ -274,11 +408,21 @@ async function executeBulkUpdate() {
     const phase = document.getElementById('bulkPhase').value;
     const template = document.getElementById('bulkTemplate').value;
     const tags = document.getElementById('bulkTags').value;
+    const projectTypesAction = document.getElementById('bulkProjectTypesAction').value;
 
     const data = { ids };
     if (phase) data.phase_code = phase;
     if (template !== '') data.template_flag = template === '1';
     if (tags) data.template_tags = tags;
+
+    // 处理项目类型
+    if (projectTypesAction === 'all') {
+        data.project_types = null; // 设为全部适用
+    } else if (projectTypesAction === 'set') {
+        const selectedTypes = Array.from(document.querySelectorAll('input[name="bulkProjectTypes"]:checked'))
+            .map(cb => cb.value);
+        data.project_types = selectedTypes.length > 0 ? selectedTypes.join(',') : null;
+    }
 
     try {
         const response = await fetch('/ors/api/tasks.php?action=bulkUpdate', {
@@ -330,6 +474,12 @@ async function editTask(id) {
             // 填充阶段下拉框
             populateEditPhases();
             document.getElementById('editPhase').value = task.phase_code || '';
+
+            // 设置项目类型选择
+            const projectTypes = task.project_types ? task.project_types.split(',') : [];
+            document.querySelectorAll('input[name="taskProjectTypes"]').forEach(cb => {
+                cb.checked = projectTypes.includes(cb.value);
+            });
 
             document.getElementById('editModal').style.display = 'flex';
         } else {
@@ -391,6 +541,10 @@ async function saveTask() {
         return;
     }
 
+    // 获取选中的项目类型
+    const selectedTypes = Array.from(document.querySelectorAll('input[name="taskProjectTypes"]:checked'))
+        .map(cb => cb.value);
+
     const data = {
         id: parseInt(id),
         title: title,
@@ -401,6 +555,7 @@ async function saveTask() {
         priority: document.getElementById('editPriority').value,
         template_flag: document.getElementById('editTemplate').checked,
         template_tags: document.getElementById('editTags').value.trim(),
+        project_types: selectedTypes.length > 0 ? selectedTypes.join(',') : null,
         block_reason: document.getElementById('editStatus').value === 'blocked'
             ? document.getElementById('editBlockReason').value
             : null

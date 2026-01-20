@@ -97,6 +97,20 @@
                     <span>添加到模板库</span>
                 </label>
             </div>
+            <div class="form-group">
+                <label>适用店铺类型（留空表示全部适用）</label>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label"><input type="checkbox" name="lessonProjectTypes" value="cafeteria"> 咖啡厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="lessonProjectTypes" value="restaurant"> 餐厅</label>
+                    <label class="checkbox-label"><input type="checkbox" name="lessonProjectTypes" value="retail"> 零售店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="lessonProjectTypes" value="bubble_tea"> 奶茶店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="lessonProjectTypes" value="ice_cream"> 冰淇淋店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="lessonProjectTypes" value="dessert"> 甜品店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="lessonProjectTypes" value="fried_chicken"> 炸鸡店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="lessonProjectTypes" value="poke"> POKE店</label>
+                    <label class="checkbox-label"><input type="checkbox" name="lessonProjectTypes" value="sushi"> 寿司店</label>
+                </div>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeLessonModal()">取消</button>
@@ -168,6 +182,8 @@ function showAddLessonModal() {
     document.getElementById('lessonDaysBeforeOpen').value = '';
     document.getElementById('lessonDaysAfterSign').value = '';
     document.getElementById('lessonTemplate').checked = true;
+    // 清空项目类型选择
+    document.querySelectorAll('input[name="lessonProjectTypes"]').forEach(cb => cb.checked = false);
     document.getElementById('lessonModal').style.display = 'flex';
 }
 
@@ -184,6 +200,10 @@ async function saveLesson() {
         return;
     }
 
+    // 获取选中的项目类型
+    const selectedTypes = Array.from(document.querySelectorAll('input[name="lessonProjectTypes"]:checked'))
+        .map(cb => cb.value);
+
     const data = {
         title: document.getElementById('lessonTitle').value,
         description: document.getElementById('lessonDescription').value,
@@ -194,7 +214,8 @@ async function saveLesson() {
         check_timing: document.getElementById('lessonCheckTiming').value,
         check_days_before_open: document.getElementById('lessonDaysBeforeOpen').value || null,
         check_days_after_sign: document.getElementById('lessonDaysAfterSign').value || null,
-        template_flag: document.getElementById('lessonTemplate').checked
+        template_flag: document.getElementById('lessonTemplate').checked,
+        project_types: selectedTypes.length > 0 ? selectedTypes.join(',') : null
     };
 
     if (!data.title) {
@@ -225,7 +246,41 @@ async function saveLesson() {
     }
 }
 
-function editLesson(id) {
-    showToast('编辑功能 - 待实现', 'info');
+async function editLesson(id) {
+    try {
+        const response = await fetch('/ors/api/lessons.php?action=get&id=' + id);
+        const result = await response.json();
+
+        if (result.success && result.data.lesson) {
+            const lesson = result.data.lesson;
+
+            // 填充编辑表单
+            document.getElementById('lessonModalTitle').textContent = '编辑踩坑记录';
+            document.getElementById('lessonId').value = lesson.id;
+            document.getElementById('lessonTitle').value = lesson.title || '';
+            document.getElementById('lessonDescription').value = lesson.description || '';
+            document.getElementById('lessonCategory').value = lesson.category || '';
+            document.getElementById('lessonSeverity').value = lesson.severity || 'medium';
+            document.getElementById('lessonRootCause').value = lesson.root_cause || '';
+            document.getElementById('lessonPreventionCheckItem').value = lesson.prevention_check_item || '';
+            document.getElementById('lessonCheckTiming').value = lesson.check_timing || '';
+            document.getElementById('lessonDaysBeforeOpen').value = lesson.check_days_before_open || '';
+            document.getElementById('lessonDaysAfterSign').value = lesson.check_days_after_sign || '';
+            document.getElementById('lessonTemplate').checked = lesson.template_flag == 1;
+
+            // 设置项目类型选择
+            const projectTypes = lesson.project_types ? lesson.project_types.split(',') : [];
+            document.querySelectorAll('input[name="lessonProjectTypes"]').forEach(cb => {
+                cb.checked = projectTypes.includes(cb.value);
+            });
+
+            document.getElementById('lessonModal').style.display = 'flex';
+        } else {
+            showToast('加载踩坑记录失败', 'error');
+        }
+    } catch (error) {
+        console.error('加载踩坑记录失败:', error);
+        showToast('网络错误', 'error');
+    }
 }
 </script>
