@@ -17,12 +17,12 @@
         <thead>
             <tr>
                 <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                <th>标题</th>
-                <th>状态</th>
-                <th>阶段</th>
-                <th>优先级</th>
-                <th>模板</th>
-                <th>创建时间</th>
+                <th class="sortable" data-sort-key="title">标题</th>
+                <th class="sortable" data-sort-key="status">状态</th>
+                <th class="sortable" data-sort-key="phase_code">阶段</th>
+                <th class="sortable" data-sort-key="priority">优先级</th>
+                <th class="sortable" data-sort-key="template_flag">模板</th>
+                <th class="sortable" data-sort-key="created_at">创建时间</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -246,6 +246,11 @@ async function loadPhases() {
     }
 }
 
+// 存储当前任务数据用于排序
+let currentTasks = [];
+let currentSortKey = null;
+let currentSortDir = 'asc';
+
 async function loadTasks() {
     const projectId = document.getElementById('projectFilter').value;
     const url = '/ors/api/tasks.php?action=list' + (projectId ? '&project_id=' + projectId : '');
@@ -257,30 +262,108 @@ async function loadTasks() {
         const result = await response.json();
 
         if (result.success && result.data.tasks.length > 0) {
-            tbody.innerHTML = result.data.tasks.map(task => {
-                const phase = phases.find(p => p.phase_code === task.phase_code);
-                return `
-                <tr>
-                    <td><input type="checkbox" class="task-checkbox" value="${task.id}"></td>
-                    <td>${escapeHtml(task.title)}</td>
-                    <td><span class="status-badge status-${task.status}">${statusNames[task.status] || task.status}</span></td>
-                    <td>${phase ? escapeHtml(phase.phase_name) : '-'}</td>
-                    <td>${priorityNames[task.priority] || '-'}</td>
-                    <td>${task.template_flag ? '<span class="badge badge-success">是</span>' : '-'}</td>
-                    <td>${formatDate(task.created_at)}</td>
-                    <td>
-                        <button class="btn btn-xs" onclick="editTask(${task.id})">编辑</button>
-                    </td>
-                </tr>
-                `;
-            }).join('');
+            currentTasks = result.data.tasks;
+            renderTasks();
         } else {
+            currentTasks = [];
             tbody.innerHTML = '<tr><td colspan="8" class="empty-state">暂无任务</td></tr>';
         }
     } catch (error) {
         tbody.innerHTML = '<tr><td colspan="8" class="error-state">加载失败</td></tr>';
     }
 }
+
+function renderTasks() {
+    const tbody = document.getElementById('tasksBody');
+    tbody.innerHTML = currentTasks.map(task => {
+        const phase = phases.find(p => p.phase_code === task.phase_code);
+        return `
+        <tr>
+            <td><input type="checkbox" class="task-checkbox" value="${task.id}"></td>
+            <td>${escapeHtml(task.title)}</td>
+            <td><span class="status-badge status-${task.status}">${statusNames[task.status] || task.status}</span></td>
+            <td>${phase ? escapeHtml(phase.phase_name) : '-'}</td>
+            <td>${priorityNames[task.priority] || '-'}</td>
+            <td>${task.template_flag ? '<span class="badge badge-success">是</span>' : '-'}</td>
+            <td>${formatDate(task.created_at)}</td>
+            <td>
+                <button class="btn btn-xs" onclick="editTask(${task.id})">编辑</button>
+            </td>
+        </tr>
+        `;
+    }).join('');
+}
+
+// 排序优先级映射
+const priorityOrder = { 'urgent': 0, 'high': 1, 'medium': 2, 'low': 3 };
+const statusOrder = { 'blocked': 0, 'doing': 1, 'todo': 2, 'done': 3 };
+
+function sortTasks(key) {
+    // 切换排序方向
+    if (currentSortKey === key) {
+        currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortKey = key;
+        currentSortDir = 'asc';
+    }
+
+    // 更新表头样式
+    document.querySelectorAll('#tasksTable th.sortable').forEach(th => {
+        th.classList.remove('asc', 'desc');
+        if (th.dataset.sortKey === key) {
+            th.classList.add(currentSortDir);
+        }
+    });
+
+    // 排序数据
+    currentTasks.sort((a, b) => {
+        let valA = a[key];
+        let valB = b[key];
+
+        // 特殊排序规则
+        if (key === 'priority') {
+            valA = priorityOrder[valA] ?? 99;
+            valB = priorityOrder[valB] ?? 99;
+        } else if (key === 'status') {
+            valA = statusOrder[valA] ?? 99;
+            valB = statusOrder[valB] ?? 99;
+        } else if (key === 'phase_code') {
+            // 根据阶段顺序排序
+            const phaseA = phases.find(p => p.phase_code === valA);
+            const phaseB = phases.find(p => p.phase_code === valB);
+            valA = phaseA ? phaseA.sort_order : 999;
+            valB = phaseB ? phaseB.sort_order : 999;
+        } else if (key === 'template_flag') {
+            valA = valA ? 1 : 0;
+            valB = valB ? 1 : 0;
+        }
+
+        // null 值处理
+        if (valA === null || valA === undefined) valA = '';
+        if (valB === null || valB === undefined) valB = '';
+
+        // 字符串比较
+        if (typeof valA === 'string') {
+            valA = valA.toLowerCase();
+            valB = valB.toLowerCase();
+        }
+
+        let result = 0;
+        if (valA < valB) result = -1;
+        if (valA > valB) result = 1;
+
+        return currentSortDir === 'asc' ? result : -result;
+    });
+
+    renderTasks();
+}
+
+// 初始化排序点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('#tasksTable th.sortable').forEach(th => {
+        th.addEventListener('click', () => sortTasks(th.dataset.sortKey));
+    });
+});
 
 function toggleSelectAll() {
     const checked = document.getElementById('selectAll').checked;

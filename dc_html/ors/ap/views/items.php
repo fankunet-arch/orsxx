@@ -15,13 +15,13 @@
         <thead>
             <tr>
                 <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                <th>名称</th>
-                <th>分类</th>
-                <th>单位</th>
-                <th>必买等级</th>
-                <th>长周期</th>
-                <th>采购周期</th>
-                <th>模板</th>
+                <th class="sortable" data-sort-key="item_name">名称</th>
+                <th class="sortable" data-sort-key="category">分类</th>
+                <th class="sortable" data-sort-key="unit">单位</th>
+                <th class="sortable" data-sort-key="must_buy_level">必买等级</th>
+                <th class="sortable" data-sort-key="long_lead_flag">长周期</th>
+                <th class="sortable" data-sort-key="lead_time_days">采购周期</th>
+                <th class="sortable" data-sort-key="template_flag">模板</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -171,8 +171,20 @@ const mustBuyLevels = {
     'optional': '可选'
 };
 
+// 存储当前物品数据用于排序
+let currentItems = [];
+let currentSortKey = null;
+let currentSortDir = 'asc';
+
+// 必买等级排序顺序
+const mustBuyOrder = { 'must': 0, 'recommended': 1, 'optional': 2 };
+
 document.addEventListener('DOMContentLoaded', function() {
     loadItems();
+    // 初始化排序点击事件
+    document.querySelectorAll('#itemsTable th.sortable').forEach(th => {
+        th.addEventListener('click', () => sortItems(th.dataset.sortKey));
+    });
 });
 
 async function loadItems() {
@@ -183,27 +195,88 @@ async function loadItems() {
         const result = await response.json();
 
         if (result.success && result.data.items.length > 0) {
-            tbody.innerHTML = result.data.items.map(item => `
-                <tr>
-                    <td><input type="checkbox" class="item-checkbox" value="${item.id}"></td>
-                    <td>${escapeHtml(item.item_name)}</td>
-                    <td>${categories[item.category] || '-'}</td>
-                    <td>${item.unit || '-'}</td>
-                    <td>${mustBuyLevels[item.must_buy_level] || '-'}</td>
-                    <td>${item.long_lead_flag ? '是' : '-'}</td>
-                    <td>${item.lead_time_days ? item.lead_time_days + ' 天' : '-'}</td>
-                    <td>${item.template_flag ? '<span class="badge badge-success">是</span>' : '-'}</td>
-                    <td>
-                        <button class="btn btn-xs" onclick="editItem(${item.id})">编辑</button>
-                    </td>
-                </tr>
-            `).join('');
+            currentItems = result.data.items;
+            renderItems();
         } else {
+            currentItems = [];
             tbody.innerHTML = '<tr><td colspan="9" class="empty-state">暂无物品</td></tr>';
         }
     } catch (error) {
         tbody.innerHTML = '<tr><td colspan="9" class="error-state">加载失败</td></tr>';
     }
+}
+
+function renderItems() {
+    const tbody = document.getElementById('itemsBody');
+    tbody.innerHTML = currentItems.map(item => `
+        <tr>
+            <td><input type="checkbox" class="item-checkbox" value="${item.id}"></td>
+            <td>${escapeHtml(item.item_name)}</td>
+            <td>${categories[item.category] || '-'}</td>
+            <td>${item.unit || '-'}</td>
+            <td>${mustBuyLevels[item.must_buy_level] || '-'}</td>
+            <td>${item.long_lead_flag ? '是' : '-'}</td>
+            <td>${item.lead_time_days ? item.lead_time_days + ' 天' : '-'}</td>
+            <td>${item.template_flag ? '<span class="badge badge-success">是</span>' : '-'}</td>
+            <td>
+                <button class="btn btn-xs" onclick="editItem(${item.id})">编辑</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function sortItems(key) {
+    // 切换排序方向
+    if (currentSortKey === key) {
+        currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortKey = key;
+        currentSortDir = 'asc';
+    }
+
+    // 更新表头样式
+    document.querySelectorAll('#itemsTable th.sortable').forEach(th => {
+        th.classList.remove('asc', 'desc');
+        if (th.dataset.sortKey === key) {
+            th.classList.add(currentSortDir);
+        }
+    });
+
+    // 排序数据
+    currentItems.sort((a, b) => {
+        let valA = a[key];
+        let valB = b[key];
+
+        // 特殊排序规则
+        if (key === 'must_buy_level') {
+            valA = mustBuyOrder[valA] ?? 99;
+            valB = mustBuyOrder[valB] ?? 99;
+        } else if (key === 'long_lead_flag' || key === 'template_flag') {
+            valA = valA ? 1 : 0;
+            valB = valB ? 1 : 0;
+        } else if (key === 'lead_time_days') {
+            valA = parseInt(valA) || 0;
+            valB = parseInt(valB) || 0;
+        }
+
+        // null 值处理
+        if (valA === null || valA === undefined) valA = '';
+        if (valB === null || valB === undefined) valB = '';
+
+        // 字符串比较
+        if (typeof valA === 'string') {
+            valA = valA.toLowerCase();
+            valB = valB.toLowerCase();
+        }
+
+        let result = 0;
+        if (valA < valB) result = -1;
+        if (valA > valB) result = 1;
+
+        return currentSortDir === 'asc' ? result : -result;
+    });
+
+    renderItems();
 }
 
 function showAddItemModal() {

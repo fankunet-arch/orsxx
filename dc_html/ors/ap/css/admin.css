@@ -966,3 +966,33 @@ body {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* Sortable Table Headers */
+.data-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 24px;
+}
+
+.data-table th.sortable:hover {
+    background: #e5e7eb;
+}
+
+.data-table th.sortable::after {
+    content: '⇅';
+    position: absolute;
+    right: 8px;
+    opacity: 0.3;
+    font-size: 0.75rem;
+}
+
+.data-table th.sortable.asc::after {
+    content: '↑';
+    opacity: 1;
+}
+
+.data-table th.sortable.desc::after {
+    content: '↓';
+    opacity: 1;
+}
